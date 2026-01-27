@@ -3,7 +3,8 @@
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { useActionState } from "react";
-import { login } from "@/app/actions/auth";
+import { login } from "@/lib/actions/auth";
+import Link from "next/link";
 
 export default function Login() {
   const [state, action, pending] = useActionState(login, undefined);
@@ -23,7 +24,7 @@ export default function Login() {
             type="text"
             placeholder="yourname@gmail.com"
           />
-          {state?.errors?.emailusername && (
+          {!pending && state?.errors?.emailusername && (
             <p className="text-sm text-red-600">{state.errors.emailusername}</p>
           )}
         </div>
@@ -38,18 +39,22 @@ export default function Login() {
             type="password"
             placeholder="••••••••"
           />
-          {state?.errors?.password && (
+          {!pending && state?.errors?.password && (
             <p className="text-sm text-red-600">{state.errors.password}</p>
           )}
         </div>
 
-        <Button type="submit">Login</Button>
-        <Button
-          type="button"
-          className="bg-blue-600 hover:bg-blue-700 focus:ring-blue-200"
-        >
-          Sign up
+        <Button type="submit" disabled={pending}>
+          Login
         </Button>
+        <Link href="/signup">
+          <Button
+            type="button"
+            className="bg-blue-600 hover:bg-blue-700 focus:ring-blue-200"
+          >
+            Sign up
+          </Button>
+        </Link>
       </form>
     </div>
   );
