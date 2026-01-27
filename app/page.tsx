@@ -24,8 +24,6 @@ export default function Page() {
             <div className="imageInner">
               <div className="imageSilhouette" />
               <div className="imageLines">
-                <div className="line w55" />
-                <div className="line w80" />
               </div>
             </div>
           </div>
@@ -56,11 +54,10 @@ export default function Page() {
             </div>
 
             <div className="dropdown">
-              <div className="ddItem"><span className="dot" /> Bulbasaur</div>
-              <div className="ddItem"><span className="dot" /> Charmander</div>
-              <div className="ddItem"><span className="dot" /> Squirtle</div>
-              <div className="ddItem"><span className="dot" /> Pikachu</div>
-              <div className="ddItem muted">…more results</div>
+              <div className="ddItem"><span className="dot" /></div>
+              <div className="ddItem"><span className="dot" /></div>
+              <div className="ddItem"><span className="dot" /></div>
+
             </div>
           </div>
 
