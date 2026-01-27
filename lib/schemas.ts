@@ -15,6 +15,9 @@ export const SignupFormSchema = z.object({
       error: "Password must contain at least one special character.",
     })
     .trim(),
+  confirmPassword: z
+    .string()
+    .min(1, { error: "Please confirm your password." }),
 });
 
 export const LoginFormSchema = z.object({
