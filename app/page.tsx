@@ -1,4 +1,6 @@
 import "./globals.css";
+import Link from "next/link";
+import SearchPokemon from "./components/SearchPokemon";
 
 export default function Page() {
   return (
@@ -14,6 +16,9 @@ export default function Page() {
 
             <div className="auth">
               <button className="btn btnGhost">Login</button>
+              <Link href="/login">
+                <button className="btn btnGhost">Login</button>
+              </Link>
               <button className="btn btnPrimary">Log Out</button>
             </div>
           </div>
@@ -24,6 +29,8 @@ export default function Page() {
             <div className="imageInner">
               <div className="imageSilhouette" />
               <div className="imageLines">
+                <div className="line w55" />
+                <div className="line w80" />
               </div>
             </div>
           </div>
@@ -60,6 +67,7 @@ export default function Page() {
 
             </div>
           </div>
+          <SearchPokemon />
 
           <div className="attemptsBlock" aria-label="Attempts">
             <div className="attemptsTop">
