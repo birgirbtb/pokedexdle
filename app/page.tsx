@@ -25,10 +25,7 @@ export default function Home() {
           <div className="card imageCard" aria-label="Image">
             <div className="imageInner">
               <div className="imageSilhouette" />
-              <div className="imageLines">
-                <div className="line w55" />
-                <div className="line w80" />
-              </div>
+              <div className="imageLines"></div>
             </div>
           </div>
 
