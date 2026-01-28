@@ -1,6 +1,8 @@
+import "./globals.css";
 import Link from "next/link";
+import SearchPokemon from "./components/SearchPokemon";
 
-export default function Home() {
+export default function Page() {
   return (
     <main className="page">
       <div className="app">
@@ -12,7 +14,6 @@ export default function Home() {
             </div>
 
             <div className="auth">
-              <button className="btn btnGhost">Login</button>
               <Link href="/login">
                 <button className="btn btnGhost">Login</button>
               </Link>
