@@ -88,7 +88,7 @@ export default function SearchPokemon() {
               {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
             </div>
           ))}
-          {results.length >= 10 && (
+          {results.length >= 3 && (
             <div className="ddItem muted">…more results</div>
           )}
         </div>
@@ -96,3 +96,4 @@ export default function SearchPokemon() {
     </div>
   );
 }
+
