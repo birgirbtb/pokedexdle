@@ -18,7 +18,7 @@ export async function searchPokemon(query: string): Promise<Pokemon[]> {
       pokemon.name.includes(query.toLowerCase())
     );
 
-    return filtered.slice(0, 10).map((pokemon: any) => ({
+    return filtered.slice(0, 3).map((pokemon: any) => ({
       name: pokemon.name,
       url: pokemon.url,
     }));
@@ -27,3 +27,4 @@ export async function searchPokemon(query: string): Promise<Pokemon[]> {
     return [];
   }
 }
+
