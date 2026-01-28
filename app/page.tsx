@@ -1,12 +1,9 @@
-import "./globals.css";
 import Link from "next/link";
-import SearchPokemon from "./components/SearchPokemon";
 
-export default function Page() {
+export default function Home() {
   return (
     <main className="page">
       <div className="app">
-
         <header className="topbar">
           <div className="topbarInner">
             <div className="brand">
@@ -61,13 +58,17 @@ export default function Page() {
             </div>
 
             <div className="dropdown">
-              <div className="ddItem"><span className="dot" /></div>
-              <div className="ddItem"><span className="dot" /></div>
-              <div className="ddItem"><span className="dot" /></div>
-
+              <div className="ddItem">
+                <span className="dot" />
+              </div>
+              <div className="ddItem">
+                <span className="dot" />
+              </div>
+              <div className="ddItem">
+                <span className="dot" />
+              </div>
             </div>
           </div>
-          <SearchPokemon />
 
           <div className="attemptsBlock" aria-label="Attempts">
             <div className="attemptsTop">
@@ -84,7 +85,6 @@ export default function Page() {
             </div>
           </div>
         </section>
-
       </div>
     </main>
   );
