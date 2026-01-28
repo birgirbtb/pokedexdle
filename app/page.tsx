@@ -1,6 +1,4 @@
-import "./globals.css";
 import Link from "next/link";
-import SearchPokemon from "./components/SearchPokemon";
 
 export default function Page() {
   return (
@@ -14,6 +12,7 @@ export default function Page() {
             </div>
 
             <div className="auth">
+              <button className="btn btnGhost">Login</button>
               <Link href="/login">
                 <button className="btn btnGhost">Login</button>
               </Link>
