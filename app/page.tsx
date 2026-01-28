@@ -1,6 +1,82 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type PokeListResult = { name: string; url: string };
+type PokeListResponse = { results: PokeListResult[] };
 
 export default function Page() {
+  const [allNames, setAllNames] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  // 1) Fetch once: list of all Pokémon names
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        setLoading(true);
+        const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=2000");
+        if (!res.ok) throw new Error(`PokeAPI error: ${res.status}`);
+
+        const data = (await res.json()) as PokeListResponse;
+        const names = data.results.map(r => r.name);
+        if (!cancelled) setAllNames(names);
+      } catch (e) {
+        // If you want, show an error state here
+        console.error(e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 2) Filter locally -> top 3
+  const top3 = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return allNames
+      .filter(n => n.includes(q))
+      .slice(0, 3);
+  }, [allNames, query]);
+
+  function pick(name: string) {
+    setQuery(name);
+    setOpen(false);
+    // later your coworkers can trigger "submit guess" here
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Escape") {
+      setOpen(false);
+      return;
+    }
+    if (e.key === "Enter") {
+      // pick top suggestion if available, else keep whatever was typed
+      if (top3.length > 0) pick(top3[0]);
+      else setOpen(false);
+    }
+  }
+
+  // close dropdown if clicking outside
+  useEffect(() => {
+    function onDocMouseDown(ev: MouseEvent) {
+      const el = wrapRef.current;
+      if (!el) return;
+      if (!el.contains(ev.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
+
   return (
     <main className="page">
       <div className="app">
@@ -13,9 +89,6 @@ export default function Page() {
 
             <div className="auth">
               <button className="btn btnGhost">Login</button>
-              <Link href="/login">
-                <button className="btn btnGhost">Login</button>
-              </Link>
               <button className="btn btnPrimary">Log Out</button>
             </div>
           </div>
@@ -25,7 +98,6 @@ export default function Page() {
           <div className="card imageCard" aria-label="Image">
             <div className="imageInner">
               <div className="imageSilhouette" />
-              <div className="imageLines"></div>
             </div>
           </div>
 
@@ -36,10 +108,12 @@ export default function Page() {
             <button className="chip">Gen</button>
           </div>
 
-          <div className="card pickerCard" aria-label="Picker">
+          <div className="card pickerCard" aria-label="Picker" ref={wrapRef}>
             <div className="pickerTop">
               <div className="pickerLabel">Your guess</div>
-              <div className="pickerHint">Start typing to search</div>
+              <div className="pickerHint">
+                {loading ? "Loading Pokédex…" : "Start typing to search"}
+              </div>
             </div>
 
             <div className="pickerBar">
@@ -50,21 +124,44 @@ export default function Page() {
                 <div className="pokeCore" />
               </div>
 
-              <div className="fakeInput" />
-              <button className="guessBtn">Guess</button>
+              <input
+                className="guessInput"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setOpen(true);
+                }}
+                onFocus={() => setOpen(true)}
+                onKeyDown={onKeyDown}
+                placeholder={loading ? "Loading..." : "Type a Pokémon name"}
+                spellCheck={false}
+                autoComplete="off"
+              />
+
+              <button className="guessBtn" onClick={() => setOpen(o => !o)}>
+                Guess
+              </button>
             </div>
 
-            <div className="dropdown">
-              <div className="ddItem">
-                <span className="dot" />
+            {open && query.trim().length > 0 && (
+              <div className="dropdown" aria-label="Results">
+                {top3.length === 0 ? (
+                  <div className="ddItem muted">No matches</div>
+                ) : (
+                  top3.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      className="ddItem ddBtn"
+                      onClick={() => pick(name)}
+                    >
+                      <span className="dot" aria-hidden="true" />
+                      {name}
+                    </button>
+                  ))
+                )}
               </div>
-              <div className="ddItem">
-                <span className="dot" />
-              </div>
-              <div className="ddItem">
-                <span className="dot" />
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="attemptsBlock" aria-label="Attempts">
