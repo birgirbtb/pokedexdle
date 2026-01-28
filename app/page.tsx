@@ -1,9 +1,65 @@
-import Image from "next/image";
+import "./globals.css";
+import Link from "next/link";
+import SearchPokemon from "./components/SearchPokemon";
 
-export default function Home() {
+export default function Page() {
   return (
-    <div>
-      
-    </div>
+    <main className="page">
+      <div className="app">
+
+        <header className="topbar">
+          <div className="topbarInner">
+            <div className="brand">
+              <div className="brandTitle">Pokedexle</div>
+              <div className="brandSub">Guess the Pokémon</div>
+            </div>
+
+            <div className="auth">
+              <Link href="/login">
+                <button className="btn btnGhost">Login</button>
+              </Link>
+              <button className="btn btnPrimary">Log Out</button>
+            </div>
+          </div>
+        </header>
+
+        <section className="content">
+          <div className="card imageCard" aria-label="Image">
+            <div className="imageInner">
+              <div className="imageSilhouette" />
+              <div className="imageLines">
+                <div className="line w55" />
+                <div className="line w80" />
+              </div>
+            </div>
+          </div>
+
+          <div className="hintRow">
+            <button className="chip">Type</button>
+            <button className="chip">Secondary Type</button>
+            <button className="chip">Evolution Stage</button>
+            <button className="chip">Gen</button>
+          </div>
+
+          <SearchPokemon />
+
+          <div className="attemptsBlock" aria-label="Attempts">
+            <div className="attemptsTop">
+              <div className="attemptsLabel">Attempts</div>
+              <div className="attemptsMeta">2 / 5 used</div>
+            </div>
+
+            <div className="attempts">
+              <div className="diamond filled" />
+              <div className="diamond filled" />
+              <div className="diamond" />
+              <div className="diamond" />
+              <div className="diamond" />
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
   );
 }
