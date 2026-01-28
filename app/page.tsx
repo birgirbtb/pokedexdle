@@ -12,7 +12,6 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
-  // 1) Fetch once: list of all Pokémon names
   useEffect(() => {
     let cancelled = false;
 
@@ -26,7 +25,6 @@ export default function Page() {
         const names = data.results.map(r => r.name);
         if (!cancelled) setAllNames(names);
       } catch (e) {
-        // If you want, show an error state here
         console.error(e);
       } finally {
         if (!cancelled) setLoading(false);
@@ -39,7 +37,6 @@ export default function Page() {
     };
   }, []);
 
-  // 2) Filter locally -> top 3
   const top3 = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
@@ -51,7 +48,6 @@ export default function Page() {
   function pick(name: string) {
     setQuery(name);
     setOpen(false);
-    // later your coworkers can trigger "submit guess" here
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -60,13 +56,11 @@ export default function Page() {
       return;
     }
     if (e.key === "Enter") {
-      // pick top suggestion if available, else keep whatever was typed
       if (top3.length > 0) pick(top3[0]);
       else setOpen(false);
     }
   }
 
-  // close dropdown if clicking outside
   useEffect(() => {
     function onDocMouseDown(ev: MouseEvent) {
       const el = wrapRef.current;
