@@ -138,12 +138,6 @@ export default function SearchPokemon() {
               </span>
             </button>
           ))}
-
-          {results.length >= 3 && (
-            <div className="py-2.5 px-3 border-t border-white/[0.06] text-[#9aa6c3]">
-              …more results
-            </div>
-          )}
         </div>
       )}
     </div>
