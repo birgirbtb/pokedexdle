@@ -45,7 +45,6 @@ export default function SearchPokemon() {
   const handleGuess = () => {
     if (selectedPokemon) {
       console.log("Guessing:", selectedPokemon.name);
-      // Game logic goes here
     }
   };
 
