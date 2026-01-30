@@ -14,6 +14,10 @@ export default function Home() {
         const allPokemon = await P.getPokemonsList({ limit: 1025 });
         const randomIndex = Math.floor(Math.random() * allPokemon.results.length);
         const randomPokemonName = allPokemon.results[randomIndex].name;
+        const speciesData = await P.getPokemonSpeciesByName(randomPokemonName);
+
+        // The generation is now available in speciesData.generation.name
+        console.log('Generation:', speciesData.generation.name); // e.g., "generation-i", "generation-vii"
         
         const pokemonData = await P.getPokemonByName(randomPokemonName);
         setPokemon(pokemonData);
@@ -39,6 +43,8 @@ export default function Home() {
   return (
     <div>
       <h1>{pokemon.name}</h1>
+      <h1>{pokemon.types[0].type.name}</h1>
+      <h1>{pokemon.types[1].type.name}</h1>
       <button onClick={playAudio}>Play Cry</button>
       {pokemon.sprites?.front_default && (
         <Image 
