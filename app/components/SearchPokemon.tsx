@@ -101,7 +101,7 @@ export default function SearchPokemon() {
           onClick={handleGuess}
           className="h-full border-l border-white/12
                      bg-linear-to-b from-[#22c55e] to-[#16a34a]
-                     text-white font-extrabold select-none
+                     text-white font-bold cursor-pointer select-none
                      active:translate-y-px"
         >
           Guess
