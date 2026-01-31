@@ -10,52 +10,66 @@ export default function Login() {
   const [state, action, pending] = useActionState(login, undefined);
 
   return (
-    <div className="w-full max-w-md space-y-6">
-      <h1 className="text-2xl text-center font-semibold">Login</h1>
-
-      <form className="space-y-4" action={action}>
-        <div className="space-y-2">
-          <label htmlFor="emailusername" className="text-sm font-medium">
-            Email/Username
-          </label>
-          <Input
-            id="emailusername"
-            name="emailusername"
-            type="text"
-            placeholder="yourname@gmail.com"
-          />
-          {!pending && state?.errors?.emailusername && (
-            <p className="text-sm text-red-600">{state.errors.emailusername}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-          />
-          {!pending && state?.errors?.password && (
-            <p className="text-sm text-red-600">{state.errors.password}</p>
-          )}
-        </div>
-
-        <Button type="submit" disabled={pending}>
+    <div className="relative w-full max-w-xl rounded-[18px] overflow-hidden bg-linear-to-b from-white/6 to-white/3 border border-white/10 shadow-[0_22px_55px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
+      <header className="border-b border-white/10">
+        <h1 className="text-white text-center p-4 tracking-[0.2px] text-2xl font-semibold">
           Login
-        </Button>
-        <Link href="/signup">
-          <Button
-            type="button"
-            className="bg-blue-600 hover:bg-blue-700 focus:ring-blue-200"
-          >
-            Sign up
+        </h1>
+      </header>
+
+      <section className="p-4.5">
+        <form className="space-y-4" action={action}>
+          <div className="space-y-2">
+            <label
+              htmlFor="emailusername"
+              className="text-sm font-medium text-[#e8eefc]"
+            >
+              Email/Username
+            </label>
+            <Input
+              id="emailusername"
+              name="emailusername"
+              type="text"
+              placeholder="yourname@gmail.com"
+            />
+            {!pending && state?.errors?.emailusername && (
+              <p className="text-sm text-red-600">
+                {state.errors.emailusername}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-[#e8eefc]"
+            >
+              Password
+            </label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+            />
+            {!pending && state?.errors?.password && (
+              <p className="text-sm text-red-600">{state.errors.password}</p>
+            )}
+          </div>
+
+          <Button type="submit" disabled={pending}>
+            Login
           </Button>
-        </Link>
-      </form>
+          <Link href="/signup">
+            <Button
+              type="button"
+              className="w-full bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
+            >
+              Sign up
+            </Button>
+          </Link>
+        </form>
+      </section>
     </div>
   );
 }

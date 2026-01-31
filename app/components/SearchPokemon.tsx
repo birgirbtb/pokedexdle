@@ -50,8 +50,8 @@ export default function SearchPokemon() {
 
   return (
     <div
-      className="w-full max-w-[760px] rounded-2xl border border-white/10
-                 bg-gradient-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)]
+      className="w-full max-w-190 rounded-2xl border border-white/10
+                 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)]
                  shadow-[0_10px_26px_rgba(0,0,0,0.35)] p-3.5"
       aria-label="Picker"
     >
@@ -64,20 +64,20 @@ export default function SearchPokemon() {
       {/* Input bar */}
       <div
         className="h-12 rounded-[14px] border border-white/[0.14]
-                   bg-gradient-to-b from-white/10 to-black/[0.18]
+                   bg-linear-to-b from-white/10 to-black/18
                    grid grid-cols-[54px_1fr_120px] items-center overflow-hidden"
       >
         {/* Pokéball icon */}
         <div
-          className="w-[34px] h-[34px] rounded-full relative ml-3
+          className="w-8.5 h-8.5 rounded-full relative ml-3
                      shadow-[0_10px_18px_rgba(0,0,0,0.35)]
                      overflow-hidden border border-white/[0.14]"
           aria-hidden="true"
         >
-          <div className="absolute inset-x-0 top-0 bottom-1/2 bg-gradient-to-b from-[#e5484d] to-[#c6282d]" />
-          <div className="absolute inset-x-0 top-1/2 bottom-0 bg-white/[0.88]" />
-          <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 bg-black/[0.85]" />
-          <div className="absolute left-1/2 top-1/2 w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white border-2 border-black/[0.85]" />
+          <div className="absolute inset-x-0 top-0 bottom-1/2 bg-linear-to-b from-[#e5484d] to-[#c6282d]" />
+          <div className="absolute inset-x-0 top-1/2 bottom-0 bg-white/88" />
+          <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 bg-black/85" />
+          <div className="absolute left-1/2 top-1/2 w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white border-2 border-black/85" />
         </div>
 
         {/* Input */}
@@ -100,7 +100,7 @@ export default function SearchPokemon() {
           type="button"
           onClick={handleGuess}
           className="h-full border-l border-white/12
-                     bg-gradient-to-b from-[#22c55e] to-[#16a34a]
+                     bg-linear-to-b from-[#22c55e] to-[#16a34a]
                      text-white font-extrabold select-none
                      active:translate-y-px"
         >
@@ -122,8 +122,8 @@ export default function SearchPokemon() {
               onClick={() => handleSelectPokemon(pokemon)}
               className="w-full flex items-center gap-2.5
                          py-2.5 px-3 text-left
-                         border-t border-white/[0.06] first:border-t-0
-                         hover:bg-white/[0.06] focus:outline-none
+                         border-t border-white/6 first:border-t-0
+                         hover:bg-white/6 focus:outline-none
                          cursor-pointer"
             >
               <span
