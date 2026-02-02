@@ -44,7 +44,7 @@ export default function Home() {
     <div>
       <h1>{pokemon.name}</h1>
       <h1>{pokemon.types[0].type.name}</h1>
-      <h1>{pokemon.types[1].type.name}</h1>
+      <h1>{pokemon.types[1]?.type.name ?? "doesn't have one"}</h1>
       <button onClick={playAudio}>Play Cry</button>
       {pokemon.sprites?.front_default && (
         <Image 
