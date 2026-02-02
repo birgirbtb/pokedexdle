@@ -7,6 +7,7 @@ const P = new Pokedex();
 
 export default function Home() {
   const [pokemon, setPokemon] = useState<any>(null);
+  const [generation, setGenoration] = useState<any>(null)
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -18,6 +19,7 @@ export default function Home() {
 
         // The generation is now available in speciesData.generation.name
         console.log('Generation:', speciesData.generation.name); // e.g., "generation-i", "generation-vii"
+        setGenoration(speciesData.generation.name)
         
         const pokemonData = await P.getPokemonByName(randomPokemonName);
         setPokemon(pokemonData);
@@ -45,10 +47,11 @@ export default function Home() {
       <h1>{pokemon.name}</h1>
       <h1>{pokemon.types[0].type.name}</h1>
       <h1>{pokemon.types[1]?.type.name ?? "doesn't have one"}</h1>
+      <h1>{generation}</h1>
       <button onClick={playAudio}>Play Cry</button>
       {pokemon.sprites?.front_default && (
         <Image 
-          src={pokemon.sprites.front_default} 
+          src={pokemon.sprites.other["official-artwork"].front_default} 
           alt={pokemon.name}
           width={400}
           height={400}
