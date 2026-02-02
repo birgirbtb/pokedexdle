@@ -2,12 +2,32 @@ import Link from "next/link";
 import SearchPokemon from "./components/SearchPokemon";
 import { createClient } from "@/lib/supabase/server";
 import LogOut from "./(auth)/components/LogOut";
+import Image from "next/image";
+import Pokedex from 'pokedex-promise-v2';
+const P = new Pokedex();
 
 export default async function Page() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  let pokemon = null
+  let generation = null
+      try {
+        const allPokemon = await P.getPokemonsList({ limit: 1025 });
+        const randomIndex = Math.floor(Math.random() * allPokemon.results.length);
+        const randomPokemonName = allPokemon.results[randomIndex].name;
+        const speciesData = await P.getPokemonSpeciesByName(randomPokemonName);
+
+        // The generation is now available in speciesData.generation.name
+        console.log('Generation:', speciesData.generation.name); // e.g., "generation-i", "generation-vii"
+        generation = (speciesData.generation.name)
+        
+        const pokemonData = await P.getPokemonByName(randomPokemonName);
+        pokemon = (pokemonData);
+      } catch (error) {
+        console.error('Error fetching pokemon:', error);
+      };
 
   return (
     <main className="min-h-screen flex justify-center items-center p-4.5">
@@ -49,7 +69,14 @@ export default async function Page() {
             aria-label="Image"
           >
             <div className="h-full rounded-[14px] border border-white/10 bg-[radial-gradient(700px_400px_at_50%_30%,rgba(255,255,255,0.1),transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(0,0,0,0.18))] grid place-items-center relative overflow-hidden">
-              <div className="w-55 h-55 rounded-[40px] bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.18),transparent_55%),rgba(0,0,0,0.28)] border border-white/10 shadow-[0_18px_40px_rgba(0,0,0,0.35)]" />
+              {pokemon?.sprites?.front_default && (
+                      <Image 
+                        src={pokemon.sprites.other["official-artwork"].front_default!}
+                        alt={pokemon.name}
+                        width={400}
+                        height={400}
+                      />
+                      )}
             </div>
           </div>
 
