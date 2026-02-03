@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import SearchPokemon from './SearchPokemon';
-import Hints from './Hints';
-import Pokedex from 'pokedex-promise-v2';
+import { useState } from "react";
+import Image from "next/image";
+import SearchPokemon from "./SearchPokemon";
+import Hints from "./Hints";
+import Pokedex from "pokedex-promise-v2";
 
 const P = new Pokedex();
 
 type Props = {
-  pokemon: any;
+  pokemon: Pokedex.Pokemon | null;
   generation: string | null;
   correctPokemon: string;
   maxAttempts: number;
@@ -63,76 +63,77 @@ export default function GameClient({
       setGameOver(false);
       setWon(false);
     } catch (err) {
-      console.error('Error fetching new Pokémon:', err);
+      console.error("Error fetching new Pokémon:", err);
     }
   }
 
   function handleGuess(isCorrect: boolean) {
-  if (gameOver || won) return;
+    if (gameOver || won) return;
 
-  const nextAttempts = attemptsUsed + 1;
-  setAttemptsUsed(nextAttempts);
+    const nextAttempts = attemptsUsed + 1;
+    setAttemptsUsed(nextAttempts);
 
-  if (isCorrect) {
-    setWon(true);
-
-    setTimeout(() => {
-      alert(`Victory! ${correctPokemon.toUpperCase()}`);
-      window.location.reload(); 
-    }, 1000);
- } else {
-    const nextHints = Math.min(revealedHints + 1, maxAttempts - 1);
-    setRevealedHints(nextHints);
-
-    if (nextAttempts >= maxAttempts) {
-      setGameOver(true);
+    if (isCorrect) {
+      setWon(true);
 
       setTimeout(() => {
-        alert(`Game Over! Correct Pokémon: ${correctPokemon.toUpperCase()}.`);
-        window.location.reload(); 
-      }, 1000); 
+        alert(`Victory! ${correctPokemon.toUpperCase()}`);
+        window.location.reload();
+      }, 1000);
+    } else {
+      const nextHints = Math.min(revealedHints + 1, maxAttempts - 1);
+      setRevealedHints(nextHints);
+
+      if (nextAttempts >= maxAttempts) {
+        setGameOver(true);
+
+        setTimeout(() => {
+          alert(`Game Over! Correct Pokémon: ${correctPokemon.toUpperCase()}.`);
+          window.location.reload();
+        }, 1000);
+      }
     }
   }
-}
-
-
 
   return (
     <>
       {/* IMAGE BLOCK */}
       <div className="w-90 h-85 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-3.5">
         <div className="h-full grid place-items-center rounded-[14px] border border-white/10 relative overflow-hidden">
-          {showImage && pokemon.sprites?.other?.['official-artwork']?.front_default && (
-            <Image
-              src={pokemon.sprites.other['official-artwork'].front_default}
-              alt={pokemon.name}
-              width={400}
-              height={400}
-              className="animate-fade-in"
-            />
-          )}
+          {showImage &&
+            pokemon?.sprites?.other?.["official-artwork"]?.front_default && (
+              <Image
+                src={pokemon.sprites.other["official-artwork"].front_default}
+                alt={pokemon.name}
+                width={400}
+                height={400}
+                className="animate-fade-in"
+              />
+            )}
 
           {!showImage && (
             <div className="absolute inset-0 grid place-items-center">
-              <span className="text-white text-6xl font-extrabold select-none">?</span>
+              <span className="text-white text-6xl font-extrabold select-none">
+                ?
+              </span>
             </div>
           )}
         </div>
       </div>
 
       {/* HINTS */}
-      <Hints pokemon={pokemon} generation={generation} revealedHints={revealedHints} />
+      <Hints
+        pokemon={pokemon}
+        generation={generation}
+        revealedHints={revealedHints}
+      />
 
       {/* SEARCH */}
       <SearchPokemon
         correctPokemon={correctPokemon}
         maxAttempts={maxAttempts}
         onGuess={(isCorrect) => handleGuess(isCorrect)}
-        pokemonData={pokemon}
-        disabled={gameOver || won}
       />
-
-      
     </>
   );
 }
