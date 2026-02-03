@@ -6,6 +6,38 @@ type Props = {
   revealedHints: number;
 };
 
+function romanToInt(roman: string): number {
+  const romanMap: Record<string, number> = {
+    I: 1,
+    V: 5,
+    X: 10,
+    L: 50,
+    C: 100,
+    D: 500,
+    M: 1000,
+  };
+
+  let total = 0;
+  for (let i = 0; i < roman.length; i++) {
+    const current = romanMap[roman[i]];
+    const next = romanMap[roman[i + 1]] || 0;
+    if (current < next) {
+      total -= current;
+    } else {
+      total += current;
+    }
+  }
+  return total;
+}
+
+function generationToNumber(generation: string | null): number | null {
+  if (!generation) return null;
+  const match = generation.match(/generation-(.+)/);
+  if (!match) return null;
+  const roman = match[1].toUpperCase();
+  return romanToInt(roman);
+}
+
 export default function Hints({ pokemon, generation, revealedHints }: Props) {
   const hints: string[] = [];
 
@@ -28,7 +60,8 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
 
   // 4️⃣ Fourth wrong guess → generation
   if (revealedHints >= 4 && generation) {
-    hints.push(`Generation: ${generation}`);
+    const genNumber = generationToNumber(generation);
+    hints.push(`Generation: ${genNumber}`);
   }
 
   return (
