@@ -1,5 +1,7 @@
+import type { Pokemon } from "pokedex-promise-v2";
+
 type Props = {
-  pokemon: any;
+  pokemon: Pokemon | null;
   generation: string | null;
   revealedHints: number;
 };
@@ -7,7 +9,7 @@ type Props = {
 export default function Hints({ pokemon, generation, revealedHints }: Props) {
   const hints: string[] = [];
 
-  const types = pokemon.types ?? [];
+  const types = pokemon?.types ?? [];
 
   // 1️⃣ First wrong guess → primary type
   if (revealedHints >= 1 && types[0]) {
@@ -16,16 +18,12 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
 
   // 2️⃣ Second wrong guess → secondary type OR None
   if (revealedHints >= 2) {
-    hints.push(
-      `Secondary Type: ${
-        types[1] ? types[1].type.name : 'None'
-      }`
-    );
+    hints.push(`Secondary Type: ${types[1] ? types[1].type.name : "None"}`);
   }
 
   // 3️⃣ Third wrong guess → evolution stage
   if (revealedHints >= 3) {
-    hints.push(`Evolution Stage: ${pokemon.evolutionStage}`);
+    hints.push(`Evolution Stage: ${pokemon?.evolutionStage}`);
   }
 
   // 4️⃣ Fourth wrong guess → generation
