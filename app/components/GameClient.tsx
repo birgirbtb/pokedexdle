@@ -21,119 +21,115 @@ export default function GameClient({
   correctPokemon: initialCorrectPokemon,
   maxAttempts = 6,
 }: Props) {
-  const [pokemon, setPokemon] = useState(initialPokemon);
-  const [generation, setGeneration] = useState(initialGeneration);
-  const [correctPokemon, setCorrectPokemon] = useState(initialCorrectPokemon);
+  const [pokemon] = useState(initialPokemon);
+  const [generation] = useState(initialGeneration);
+  const [correctPokemon] = useState(initialCorrectPokemon);
   const [attemptsUsed, setAttemptsUsed] = useState(0);
   const [revealedHints, setRevealedHints] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
 
   const showImage = revealedHints >= maxAttempts - 1 || won;
 
-  async function fetchNewPokemon() {
-    try {
-      const allPokemon = await P.getPokemonsList({ limit: 1025 });
-      const randomIndex = Math.floor(Math.random() * allPokemon.results.length);
-      const randomName = allPokemon.results[randomIndex].name;
+  function handleGuess(isCorrect: boolean, guessName: string) {
+  if (gameOver || won) return;
 
-      const speciesData = await P.getPokemonSpeciesByName(randomName);
-      const newGeneration = speciesData.generation.name;
+  setPreviousGuesses((prev) => [...prev, guessName]);
+  const nextAttempts = attemptsUsed + 1;
+  setAttemptsUsed(nextAttempts);
 
-      const newPokemon = await P.getPokemonByName(randomName);
+  if (isCorrect) {
+    setWon(true);
 
-      const evoRes = await fetch(speciesData.evolution_chain.url);
-      const evoChain = await evoRes.json();
-      let stage = 1;
-      let current = evoChain.chain;
-      while (current) {
-        if (current.species.name === randomName) {
-          break;
-        }
-        current = current.evolves_to?.[0];
-        stage++;
-      }
-      newPokemon.evolutionStage = stage;
+    setTimeout(() => {
+      alert(`Victory! ${correctPokemon.toUpperCase()}`);
+      window.location.reload();
+    }, 800);
 
-      setPokemon(newPokemon);
-      setGeneration(newGeneration);
-      setCorrectPokemon(randomName);
-      setAttemptsUsed(0);
-      setRevealedHints(0);
-      setGameOver(false);
-      setWon(false);
-    } catch (err) {
-      console.error("Error fetching new Pokémon:", err);
-    }
+    return;
   }
 
-  function handleGuess(isCorrect: boolean) {
-    if (gameOver || won) return;
+  const nextHints = Math.min(revealedHints + 1, maxAttempts - 1);
+  setRevealedHints(nextHints);
 
-    const nextAttempts = attemptsUsed + 1;
-    setAttemptsUsed(nextAttempts);
+  if (nextAttempts >= maxAttempts) {
+    setGameOver(true);
 
-    if (isCorrect) {
-      setWon(true);
-
-      setTimeout(() => {
-        alert(`Victory! ${correctPokemon.toUpperCase()}`);
-        window.location.reload();
-      }, 1000);
-    } else {
-      const nextHints = Math.min(revealedHints + 1, maxAttempts - 1);
-      setRevealedHints(nextHints);
-
-      if (nextAttempts >= maxAttempts) {
-        setGameOver(true);
-
-        setTimeout(() => {
-          alert(`Game Over! Correct Pokémon: ${correctPokemon.toUpperCase()}.`);
-          window.location.reload();
-        }, 1000);
-      }
-    }
+    setTimeout(() => {
+      alert(`Game Over! Correct Pokémon: ${correctPokemon.toUpperCase()}`);
+      window.location.reload();
+    }, 800);
   }
+}
+
 
   return (
-    <>
-      {/* IMAGE BLOCK */}
-      <div className="w-90 h-85 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-3.5">
-        <div className="h-full grid place-items-center rounded-[14px] border border-white/10 relative overflow-hidden">
-          {showImage &&
-            pokemon?.sprites?.other?.["official-artwork"]?.front_default && (
-              <Image
-                src={pokemon.sprites.other["official-artwork"].front_default}
-                alt={pokemon.name}
-                width={400}
-                height={400}
-                className="animate-fade-in"
-              />
-            )}
+    <div className="w-full flex justify-center">
+      {/* MAIN CONTAINER */}
+      <div className="w-full max-w-6xl flex flex-col items-center gap-6">
+        {/* IMAGE + PREVIOUS GUESSES */}
+        <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center">
+          {/* PREVIOUS GUESSES */}
+          <div className="flex justify-end pr-6">
+            <div className="w-40 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-4">
+              <div className="text-white font-medium mb-2">
+                Previous Guesses
+              </div>
 
-          {!showImage && (
-            <div className="absolute inset-0 grid place-items-center">
-              <span className="text-white text-6xl font-extrabold select-none">
-                ?
-              </span>
+              {previousGuesses.length === 0 ? (
+                <div className="text-[#9aa6c3] text-sm">None yet</div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {previousGuesses.map((guess, i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl bg-white/10 border border-white/10 py-0 px-3 text-sm font-semibold text-center text-white"
+                    >
+                      {guess.charAt(0).toUpperCase() + guess.slice(1)}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
+          {/* IMAGE */}
+          <div className="flex justify-center">
+            <div className="w-96 h-96 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] grid place-items-center">
+              {showImage &&
+              pokemon?.sprites?.other?.["official-artwork"]?.front_default ? (
+                <Image
+                  src={
+                    pokemon.sprites.other["official-artwork"].front_default
+                  }
+                  alt={pokemon.name}
+                  width={360}
+                  height={360}
+                />
+              ) : (
+                <span className="text-white text-6xl font-extrabold">?</span>
+              )}
+            </div>
+          </div>
+
+          <div />
         </div>
+
+        {/* HINTS */}
+        <Hints
+          pokemon={pokemon}
+          generation={generation}
+          revealedHints={revealedHints}
+        />
+
+        {/* SEARCH */}
+        <SearchPokemon
+          correctPokemon={correctPokemon}
+          maxAttempts={maxAttempts}
+          onGuess={handleGuess}
+        />
       </div>
-
-      {/* HINTS */}
-      <Hints
-        pokemon={pokemon}
-        generation={generation}
-        revealedHints={revealedHints}
-      />
-
-      {/* SEARCH */}
-      <SearchPokemon
-        correctPokemon={correctPokemon}
-        maxAttempts={maxAttempts}
-        onGuess={(isCorrect) => handleGuess(isCorrect)}
-      />
-    </>
+    </div>
   );
 }
