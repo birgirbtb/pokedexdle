@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { searchPokemon } from '@/app/actions/pokemon';
+import { useEffect, useRef, useState } from "react";
+import { searchPokemon } from "@/app/actions/pokemon";
 
 interface Pokemon {
   name: string;
@@ -11,24 +11,24 @@ interface Pokemon {
 interface Props {
   correctPokemon: string;
   maxAttempts?: number;
-  onGuess?: (isCorrect: boolean, incorrectCount: number) => void;
+  onGuess?: (isCorrect: boolean, guessName: string) => void;
 }
 
 export default function SearchPokemon({
   correctPokemon,
   maxAttempts = 6,
-  onGuess
+  onGuess,
 }: Props) {
-  const [searchInput, setSearchInput] = useState('');
+  const [searchInput, setSearchInput] = useState("");
   const [results, setResults] = useState<Pokemon[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
-  const [incorrectGuesses, setIncorrectGuesses] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!searchInput.trim()) {
+    if (!isTyping || !searchInput.trim()) {
       setResults([]);
       setShowDropdown(false);
       return;
@@ -41,7 +41,7 @@ export default function SearchPokemon({
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [searchInput]);
+  }, [searchInput, isTyping]);
 
   const handleGuess = () => {
     if (!selectedPokemon) return;
@@ -49,17 +49,12 @@ export default function SearchPokemon({
     const isCorrect =
       selectedPokemon.name.toLowerCase() === correctPokemon.toLowerCase();
 
-    if (isCorrect) {
-      alert(`Correct! It's ${correctPokemon.toUpperCase()}`);
-    } else {
-      const next = Math.min(incorrectGuesses + 1, maxAttempts);
-      setIncorrectGuesses(next);
-      onGuess?.(false, next);
-    }
+    onGuess?.(isCorrect, selectedPokemon.name);
 
-    setSearchInput('');
+    setSearchInput("");
     setSelectedPokemon(null);
     setShowDropdown(false);
+    setIsTyping(false);
   };
 
   return (
@@ -75,8 +70,11 @@ export default function SearchPokemon({
         <input
           ref={inputRef}
           value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onFocus={() => searchInput && setShowDropdown(true)}
+          onChange={(e) => {
+            setSearchInput(e.target.value);
+            setIsTyping(true);
+            setShowDropdown(true);
+          }}
           placeholder="Search Pokémon..."
           className="w-full h-full bg-transparent border-none outline-none px-3 text-sm font-bold text-[#e8eefc] placeholder:text-[rgba(154,166,195,0.7)]"
         />
@@ -99,42 +97,20 @@ export default function SearchPokemon({
                 setSelectedPokemon(pokemon);
                 setSearchInput(pokemon.name);
                 setShowDropdown(false);
+                setIsTyping(false);
+                inputRef.current?.blur();
               }}
               className="w-full flex items-center gap-2.5 py-2.5 px-3 text-left border-t border-white/6 first:border-t-0 hover:bg-white/6 cursor-pointer"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-[rgba(229,72,77,0.9)] shadow-[0_0_0_2px_rgba(255,255,255,0.12)_inset]" />
               <span className="text-[#e8eefc]">
-                {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
+                {pokemon.name.charAt(0).toUpperCase() +
+                  pokemon.name.slice(1)}
               </span>
             </div>
           ))}
         </div>
       )}
-
-      {/* Attempts */}
-      <div className="mt-4 flex items-center justify-between">
-        {/* Diamonds */}
-        <div className="flex gap-3">
-          {Array.from({ length: maxAttempts }).map((_, i) => (
-            <div
-              key={i}
-              className={`
-                w-5.5 h-5.5 rotate-45 rounded-[3px] border
-                ${
-                  i < incorrectGuesses
-                    ? 'bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]'
-                    : 'bg-white/80 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]'
-                }
-              `}
-            />
-          ))}
-        </div>
-
-        {/* Attempts text */}
-        <div className="text-[#9aa6c3] text-xs font-medium">
-          {incorrectGuesses} / {maxAttempts} attempts used
-        </div>
-      </div>
     </div>
   );
 }

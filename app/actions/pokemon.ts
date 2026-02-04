@@ -1,36 +1,25 @@
-'use server';
+import Pokedex from "pokedex-promise-v2";
+
+const P = new Pokedex();
+
+
+let cachedPokemonList: { name: string; url: string }[] | null = null;
 
 export async function searchPokemon(query: string) {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=1000`);
-  const data = await res.json();
+  if (!query.trim()) return [];
 
-  return data.results.filter((p: any) =>
-    p.name.toLowerCase().includes(query.toLowerCase())
-  );
-}
+  if (!cachedPokemonList) {
+    const res = await P.getPokemonsList({
+      limit: 100000, // future proofing
+      offset: 0,
+    });
 
-export async function getPokemonDetails(name: string) {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`);
-  if (!res.ok) return null;
-  return res.json();
-}
-
-export async function getPokemonEvolutionStage(name: string) {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name.toLowerCase()}`);
-  if (!res.ok) return null;
-  const species = await res.json();
-
-  const evoRes = await fetch(species.evolution_chain.url);
-  const evoChain = await evoRes.json();
-
-  let stage = 1;
-  let current = evoChain.chain;
-
-  while (current) {
-    if (current.species.name === name.toLowerCase()) return stage;
-    current = current.evolves_to?.[0];
-    stage++;
+    cachedPokemonList = res.results;
   }
 
-  return null;
+  const lower = query.toLowerCase();
+
+  return cachedPokemonList
+    .filter((pokemon) => pokemon.name.includes(lower))
+    .slice(0, 10);
 }
