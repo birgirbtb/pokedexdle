@@ -5,6 +5,9 @@ import Image from "next/image";
 import SearchPokemon from "./SearchPokemon";
 import Hints from "./Hints";
 import Pokedex from "pokedex-promise-v2";
+import { Dialog } from "radix-ui";
+import { Cross2Icon } from "@radix-ui/react-icons";
+import { DialogTrigger } from "@radix-ui/react-dialog";
 
 const P = new Pokedex();
 
@@ -28,6 +31,7 @@ export default function GameClient({
   const [revealedHints, setRevealedHints] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const showImage = revealedHints >= maxAttempts - 1 || won;
 
@@ -77,7 +81,7 @@ export default function GameClient({
       setWon(true);
 
       setTimeout(() => {
-        alert(`Victory! ${correctPokemon.toUpperCase()}`);
+        setOpen(true)
         window.location.reload();
       }, 1000);
     } else {
@@ -88,7 +92,7 @@ export default function GameClient({
         setGameOver(true);
 
         setTimeout(() => {
-          alert(`Game Over! Correct Pokémon: ${correctPokemon.toUpperCase()}.`);
+          setOpen(true)
           window.location.reload();
         }, 1000);
       }
@@ -97,6 +101,14 @@ export default function GameClient({
 
   return (
     <>
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-blackA6 data-[state=open]:animate-overlayShow" />
+			  <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-md bg-gray1 p-[25px] shadow-[var(--shadow-6)] focus:outline-none data-[state=open]:animate-contentShow">
+        <h1>hello</h1>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
       {/* IMAGE BLOCK */}
       <div className="w-90 h-85 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-3.5">
         <div className="h-full grid place-items-center rounded-[14px] border border-white/10 relative overflow-hidden">
