@@ -132,8 +132,8 @@ export default function HistoryPage() {
                 </div>
               </div>
 
-              {/* ===== Row: Day 9 (not played / muted) ===== */}
-              <div className="flex items-center gap-6 opacity-60">
+              {/* ===== Row: Day 9 (Play?) ===== */}
+              <div className="flex items-center gap-6">
                 <div className="w-28 text-[#9aa6c3]">Day 9</div>
                 <div className="flex gap-2">
                   <div className="w-7 h-7 rounded-md bg-white/5 border border-white/10" />
@@ -155,10 +155,10 @@ export default function HistoryPage() {
                 <span>Wrong</span>
               </div>
 
-              {/* Not played */}
+              {/* Play? */}
               <div className="flex items-center gap-3">
                 <span className="w-4 h-4 rounded-md bg-white/5 border border-white/10" />
-                <span>Not played</span>
+                <span>Play?</span>
               </div>
             </div>
           </div>
