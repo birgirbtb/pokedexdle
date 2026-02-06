@@ -24,6 +24,7 @@ export default function SearchPokemon({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [incorrectGuesses, setIncorrectGuesses] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -49,6 +50,10 @@ export default function SearchPokemon({
     const isCorrect =
       selectedPokemon.name.toLowerCase() === correctPokemon.toLowerCase();
 
+    if (!isCorrect) {
+      setIncorrectGuesses((prev) => Math.min(prev + 1, maxAttempts));
+    }
+
     onGuess?.(isCorrect, selectedPokemon.name);
 
     setSearchInput("");
@@ -65,7 +70,7 @@ export default function SearchPokemon({
         <div className="text-[#9aa6c3] text-xs">Start typing to search</div>
       </div>
 
-      {/* Input bar */}
+      {/* Input */}
       <div className="h-12 rounded-[14px] border border-white/[0.14] bg-linear-to-b from-white/10 to-black/18 grid grid-cols-[1fr_120px] items-center overflow-hidden">
         <input
           ref={inputRef}
@@ -103,6 +108,7 @@ export default function SearchPokemon({
               className="w-full flex items-center gap-2.5 py-2.5 px-3 text-left border-t border-white/6 first:border-t-0 hover:bg-white/6 cursor-pointer"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-[rgba(229,72,77,0.9)] shadow-[0_0_0_2px_rgba(255,255,255,0.12)_inset]" />
+
               <span className="text-[#e8eefc]">
                 {pokemon.name.charAt(0).toUpperCase() +
                   pokemon.name.slice(1)}
@@ -111,6 +117,29 @@ export default function SearchPokemon({
           ))}
         </div>
       )}
+
+      {/* Attempts */}
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex gap-3">
+          {Array.from({ length: maxAttempts }).map((_, i) => (
+            <div
+              key={i}
+              className={`
+                w-5.5 h-5.5 rotate-45 rounded-[3px] border
+                ${
+                  i < incorrectGuesses
+                    ? "bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
+                    : "bg-white/80 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
+                }
+              `}
+            />
+          ))}
+        </div>
+
+        <div className="text-[#9aa6c3] text-xs font-medium">
+          {incorrectGuesses} / {maxAttempts} attempts used
+        </div>
+      </div>
     </div>
   );
 }
