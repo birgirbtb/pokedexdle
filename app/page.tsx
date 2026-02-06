@@ -2,8 +2,8 @@ import Link from "next/link";
 import LogOut from "./(auth)/components/LogOut";
 import { createClient } from "@/lib/supabase/client";
 import Pokedex from "pokedex-promise-v2";
-import Image from "next/image";
 import GameClient from "./components/GameClient";
+import { randomInt } from "crypto";
 
 const P = new Pokedex();
 
@@ -44,7 +44,7 @@ export default async function Page() {
 
   try {
     const allPokemon = await P.getPokemonsList({ limit: 1025 });
-    const randomIndex = Math.floor(Math.random() * allPokemon.results.length);
+    const randomIndex = randomInt(0, allPokemon.results.length);
     const randomPokemonName = allPokemon.results[randomIndex].name;
 
     correctPokemon = randomPokemonName;
