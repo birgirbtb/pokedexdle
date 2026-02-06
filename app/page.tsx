@@ -1,6 +1,6 @@
 import Link from "next/link";
 import LogOut from "./(auth)/components/LogOut";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 import Pokedex from "pokedex-promise-v2";
 import Image from "next/image";
 import GameClient from "./components/GameClient";
