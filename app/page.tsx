@@ -3,7 +3,6 @@ import LogOut from "./(auth)/components/LogOut";
 import { createClient } from "@/lib/supabase/server";
 import Pokedex from "pokedex-promise-v2";
 import GameClient from "./components/GameClient";
-import { randomInt } from "crypto";
 
 const P = new Pokedex();
 
