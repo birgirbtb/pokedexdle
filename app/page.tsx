@@ -3,6 +3,7 @@ import LogOut from "./(auth)/components/LogOut";
 import { createClient } from "@/lib/supabase/server";
 import Pokedex from "pokedex-promise-v2";
 import GameClient from "./components/GameClient";
+import { getTodaysPokemon, getUserGame } from "./actions/guess";
 
 const P = new Pokedex();
 
@@ -35,13 +36,7 @@ export default async function Page() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: pokemonData } = await supabase
-    .from("daily_pokemon")
-    .select("*")
-    .eq("available_on", new Date().toISOString().split("T")[0])
-    .single();
-
-  const maxAttempts = 6;
+  const pokemonData = await getTodaysPokemon();
 
   let pokemon: Pokedex.Pokemon & { evolutionStage?: number };
   let generation: string;
@@ -64,6 +59,8 @@ export default async function Page() {
     console.error("Error fetching pokemon:", error);
     return <div className="text-white">Error loading pokemon data</div>;
   }
+
+  const game = await getUserGame();
 
   return (
     <main className="min-h-screen flex justify-center items-center p-4.5">
@@ -101,7 +98,7 @@ export default async function Page() {
             pokemon={pokemon}
             generation={generation}
             correctPokemon={correctPokemon}
-            maxAttempts={maxAttempts}
+            maxAttempts={6}
           />
         </section>
       </div>
