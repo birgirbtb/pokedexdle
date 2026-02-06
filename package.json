@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "tsx --env-file=.env.local scripts/seed-pokemon.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed-pokemon.ts",
+    "generate": "npx supabase gen types typescript --project-id \"rtsswggsekiknsthtmxc\" --schema public > lib/supabase/database.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -30,6 +31,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
+    "supabase": "^2.75.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
