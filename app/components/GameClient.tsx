@@ -45,6 +45,7 @@ export default function GameClient({
 
   if (isCorrect) {
     setWon(true);
+    setRevealedHints(maxAttempts - 1);
 
     setTimeout(() => {
       setOpen(true)
@@ -59,6 +60,7 @@ export default function GameClient({
 
   if (nextAttempts >= maxAttempts) {
     setGameOver(true);
+    setRevealedHints(maxAttempts - 1);
 
     setTimeout(() => {
       setOpen(true)
@@ -69,6 +71,7 @@ export default function GameClient({
 function handleAutoWin() {
   if (gameOver || won) return;
   setWon(true);
+  setRevealedHints(maxAttempts - 1);
   setTimeout(() => setOpen(true), 200);
 }
 
@@ -76,6 +79,7 @@ function handleAutoLose() {
   if (gameOver || won) return;
   setGameOver(true);
   setAttemptsUsed(maxAttempts);
+  setRevealedHints(maxAttempts - 1);
   setTimeout(() => setOpen(true), 200);
 }
 
