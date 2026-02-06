@@ -26,7 +26,7 @@ export default function GameClient({
 }: Props) {
   const [pokemon] = useState(initialPokemon);
   const [generation] = useState(initialGeneration);
-  const [correctPokemon] = useState(initialCorrectPokemon);
+  const [correctPokemon] = useState(initialCorrectPokemon.charAt(0).toUpperCase() + initialCorrectPokemon.slice(1));
   const [attemptsUsed, setAttemptsUsed] = useState(0);
   const [revealedHints, setRevealedHints] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -66,16 +66,57 @@ export default function GameClient({
   }
 }
 
+function handleAutoWin() {
+  if (gameOver || won) return;
+  setWon(true);
+  setTimeout(() => setOpen(true), 200);
+}
+
+function handleAutoLose() {
+  if (gameOver || won) return;
+  setGameOver(true);
+  setAttemptsUsed(maxAttempts);
+  setTimeout(() => setOpen(true), 200);
+}
+
 
   return (
     <>
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow" />
-			  <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-md bg-gray-500 p-[25px] focus:outline-none">
-        <Dialog.Title className="m-0 text-[17px] font-medium text-mauve12">
-					hello
-				</Dialog.Title>
+        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm data-[state=open]:animate-overlayShow z-40" />
+        <Dialog.Content
+          className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-gradient-to-b from-[rgba(17,28,51,0.98)] to-[rgba(15,23,42,0.98)] shadow-2xl p-8 flex flex-col items-center gap-4 z-50"
+        >
+          <button
+            className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+            onClick={() => setOpen(false)}
+            aria-label="Close"
+          >
+            <Cross2Icon width={22} height={22} />
+          </button>
+          <Dialog.Title className="text-2xl font-extrabold text-white text-center mb-2">
+            {won && (
+              <>
+                <span className="block text-green-400 mb-1">🎉 Well done!</span>
+                <span>The answer was <span className="font-bold text-yellow-300">{correctPokemon}</span></span>
+              </>
+            )}
+            {gameOver && !won && (
+              <>
+                <span className="block text-rose-400 mb-1">❌ Nice try!</span>
+                <span>The correct answer was <span className="font-bold text-yellow-300">{correctPokemon}</span></span>
+              </>
+            )}
+          </Dialog.Title>
+          <div className="w-full flex flex-col items-center gap-2 mt-2">
+            <button
+              className="mt-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-rose-500 text-white font-bold shadow hover:scale-105 transition-transform"
+              onClick={() => setOpen(false)}
+            >
+              Close
+            </button>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
@@ -136,6 +177,22 @@ export default function GameClient({
           generation={generation}
           revealedHints={revealedHints}
         />
+
+        {/* DEBUG: Auto Win / Auto Lose (for development) */}
+        <div className="w-full max-w-190 mt-2 flex justify-center gap-3">
+          <button
+            onClick={handleAutoWin}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] text-white font-bold shadow hover:scale-105 transition-transform"
+          >
+            Auto Win
+          </button>
+          <button
+            onClick={handleAutoLose}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#ef4444] to-[#dc2626] text-white font-bold shadow hover:scale-105 transition-transform"
+          >
+            Auto Lose
+          </button>
+        </div>
 
         {/* SEARCH */}
         <SearchPokemon
