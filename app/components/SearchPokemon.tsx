@@ -28,7 +28,6 @@ export default function SearchPokemon({
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // 🔍 Search effect
   useEffect(() => {
     if (!isTyping || !searchInput.trim()) {
       setResults([]);
@@ -45,7 +44,6 @@ export default function SearchPokemon({
     return () => clearTimeout(timeout);
   }, [searchInput, isTyping]);
 
-  // 🎯 Guess handler
   const handleGuess = () => {
     if (!selectedPokemon) return;
 
@@ -120,7 +118,7 @@ export default function SearchPokemon({
         </div>
       )}
 
-      {/* 💎 Attempts */}
+      {/* Attempts */}
       <div className="mt-4 flex items-center justify-between">
         <div className="flex gap-3">
           {Array.from({ length: maxAttempts }).map((_, i) => (
