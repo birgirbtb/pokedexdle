@@ -9,14 +9,14 @@ interface Pokemon {
 }
 
 interface Props {
-  correctPokemon: string;
   maxAttempts?: number;
-  onGuess?: (isCorrect: boolean, guessName: string) => void;
+  attemptsUsed: number;
+  onGuess: (guessName: string) => void;
 }
 
 export default function SearchPokemon({
-  correctPokemon,
   maxAttempts = 6,
+  attemptsUsed,
   onGuess,
 }: Props) {
   const [searchInput, setSearchInput] = useState("");
@@ -24,12 +24,15 @@ export default function SearchPokemon({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [incorrectGuesses, setIncorrectGuesses] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isTyping || !searchInput.trim()) {
+      /*
+        Veit ekki afhverju það byrjar að kvarta hér en þetta virkar eins og það á að gera
+      */
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([]);
       setShowDropdown(false);
       return;
@@ -47,14 +50,7 @@ export default function SearchPokemon({
   const handleGuess = () => {
     if (!selectedPokemon) return;
 
-    const isCorrect =
-      selectedPokemon.name.toLowerCase() === correctPokemon.toLowerCase();
-
-    if (!isCorrect) {
-      setIncorrectGuesses((prev) => Math.min(prev + 1, maxAttempts));
-    }
-
-    onGuess?.(isCorrect, selectedPokemon.name);
+    onGuess(selectedPokemon.name);
 
     setSearchInput("");
     setSelectedPokemon(null);
@@ -126,7 +122,7 @@ export default function SearchPokemon({
               className={`
                 w-5.5 h-5.5 rotate-45 rounded-[3px] border
                 ${
-                  i < incorrectGuesses
+                  i < attemptsUsed
                     ? "bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                     : "bg-white/80 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                 }
@@ -136,7 +132,7 @@ export default function SearchPokemon({
         </div>
 
         <div className="text-[#9aa6c3] text-xs font-medium">
-          {incorrectGuesses} / {maxAttempts} attempts used
+          {attemptsUsed} / {maxAttempts} attempts used
         </div>
       </div>
     </div>

@@ -94,11 +94,7 @@ export default async function Page() {
         </header>
 
         <section className="p-4.5 flex flex-col items-center gap-3.5">
-          <GameClient
-            pokemon={pokemon}
-            generation={generation}
-            maxAttempts={6}
-          />
+          <GameClient pokemon={pokemon} generation={generation} game={game} />
         </section>
       </div>
     </main>

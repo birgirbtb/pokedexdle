@@ -7,37 +7,42 @@ import Hints from "./Hints";
 import Pokedex from "pokedex-promise-v2";
 import { Dialog } from "radix-ui";
 import { Cross2Icon } from "@radix-ui/react-icons";
-
-const P = new Pokedex();
+import { getUserGame } from "../actions/guess";
 
 type Props = {
   pokemon: Pokedex.Pokemon | null;
   generation: string | null;
-  maxAttempts: number;
+  maxAttempts?: number;
+  game?: Awaited<ReturnType<typeof getUserGame>>;
 };
 
 export default function GameClient({
   pokemon,
   generation,
   maxAttempts = 6,
+  game,
 }: Props) {
-  const [attemptsUsed, setAttemptsUsed] = useState(0);
-  const [revealedHints, setRevealedHints] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
-  const [won, setWon] = useState(false);
+  const [attemptsUsed, setAttemptsUsed] = useState(game?.guesses.length || 0);
+  const [won, setWon] = useState(game?.won || false);
+  const [previousGuesses, setPreviousGuesses] = useState<string[]>(
+    game?.guesses
+      .sort((a, b) => a.attempt_number - b.attempt_number)
+      .map((guess) => guess.guess_name) || [],
+  );
   const [open, setOpen] = useState(false);
-  const [previousGuesses, setPreviousGuesses] = useState<string[]>([]);
 
-  const showImage = revealedHints >= maxAttempts - 1 || won;
+  const gameOver = attemptsUsed >= maxAttempts && !won;
+  const showImage = attemptsUsed >= maxAttempts - 1 || won;
 
-  function handleGuess(isCorrect: boolean, guessName: string) {
+  function handleGuess(guessName: string) {
     if (gameOver || won) return;
 
     setPreviousGuesses((prev) => [...prev, guessName]);
     const nextAttempts = attemptsUsed + 1;
     setAttemptsUsed(nextAttempts);
 
-    if (isCorrect) {
+    if (guessName.toLowerCase() === pokemon?.name.toLowerCase()) {
+      // User guessed correctly
       setWon(true);
 
       setTimeout(() => {
@@ -47,12 +52,8 @@ export default function GameClient({
       return;
     }
 
-    const nextHints = Math.min(revealedHints + 1, maxAttempts - 1);
-    setRevealedHints(nextHints);
-
     if (nextAttempts >= maxAttempts) {
-      setGameOver(true);
-
+      // Game over, reveal correct answer
       setTimeout(() => {
         setOpen(true);
       }, 800);
@@ -67,7 +68,6 @@ export default function GameClient({
 
   function handleAutoLose() {
     if (gameOver || won) return;
-    setGameOver(true);
     setAttemptsUsed(maxAttempts);
     setTimeout(() => setOpen(true), 200);
   }
@@ -179,13 +179,13 @@ export default function GameClient({
           <Hints
             pokemon={pokemon}
             generation={generation}
-            revealedHints={revealedHints}
+            revealedHints={attemptsUsed}
           />
 
           {/* SEARCH */}
           <SearchPokemon
-            correctPokemon={pokemon?.name || ""}
             maxAttempts={maxAttempts}
+            attemptsUsed={attemptsUsed}
             onGuess={handleGuess}
           />
         </div>
