@@ -97,7 +97,6 @@ export default async function Page() {
           <GameClient
             pokemon={pokemon}
             generation={generation}
-            correctPokemon={correctPokemon}
             maxAttempts={6}
           />
         </section>

@@ -110,8 +110,7 @@ export default function SearchPokemon({
               <span className="w-2.5 h-2.5 rounded-full bg-[rgba(229,72,77,0.9)] shadow-[0_0_0_2px_rgba(255,255,255,0.12)_inset]" />
 
               <span className="text-[#e8eefc]">
-                {pokemon.name.charAt(0).toUpperCase() +
-                  pokemon.name.slice(1)}
+                {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
               </span>
             </div>
           ))}
