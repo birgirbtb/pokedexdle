@@ -43,25 +43,34 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
 
   const types = pokemon?.types ?? [];
 
-  // 1️⃣ First wrong guess → primary type
+  // First wrong guess → primary type
   if (revealedHints >= 1 && types[0]) {
     hints.push(`Type: ${types[0].type.name}`);
+  } else {
+    hints.push("Type: ???");
   }
 
-  // 2️⃣ Second wrong guess → secondary type OR None
+  // Second wrong guess → secondary type OR None
   if (revealedHints >= 2) {
-    hints.push(`Secondary Type: ${types[1] ? types[1].type.name : "None"}`);
+    hints.push(
+      `Secondary Type: ${types[1] ? types[1].type.name : "None"}`);
+  } else {
+    hints.push("Secondary Type: ???");
   }
 
-  // 3️⃣ Third wrong guess → evolution stage
+  // Third wrong guess → evolution stage
   if (revealedHints >= 3) {
-    hints.push(`Evolution Stage: ${pokemon?.evolutionStage}`);
+    hints.push(`Evolution Stage: ${pokemon?.evolutionStage ?? "?"}`);
+  } else {
+    hints.push("Evolution Stage: ???");
   }
 
-  // 4️⃣ Fourth wrong guess → generation
+  // Fourth wrong guess → generation
   if (revealedHints >= 4 && generation) {
-    const genNumber = generationToNumber(generation);
+    const genNumber = generationToNumber(generation)
     hints.push(`Generation: ${genNumber}`);
+  } else {
+    hints.push("Generation: ???");
   }
 
   return (
