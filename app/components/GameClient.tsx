@@ -7,7 +7,7 @@ import Hints from "./Hints";
 import Pokedex from "pokedex-promise-v2";
 import { Dialog } from "radix-ui";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { getUserGame } from "../actions/guess";
+import { createGuess, getUserGame } from "../actions/guess";
 
 type Props = {
   pokemon: Pokedex.Pokemon | null;
@@ -34,12 +34,14 @@ export default function GameClient({
   const gameOver = attemptsUsed >= maxAttempts && !won;
   const showImage = attemptsUsed >= maxAttempts - 1 || won;
 
-  function handleGuess(guessName: string) {
+  async function handleGuess(guessName: string) {
     if (gameOver || won) return;
 
     setPreviousGuesses((prev) => [...prev, guessName]);
     const nextAttempts = attemptsUsed + 1;
     setAttemptsUsed(nextAttempts);
+
+    await createGuess(guessName);
 
     if (guessName.toLowerCase() === pokemon?.name.toLowerCase()) {
       // User guessed correctly

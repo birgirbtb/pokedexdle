@@ -1,3 +1,5 @@
+"use server";
+
 import { createClient } from "@/lib/supabase/server";
 
 export async function getTodaysPokemon() {
@@ -49,24 +51,49 @@ export async function createGame() {
       throw new Error("No pokemon data available");
     }
 
-    await supabase.from("games").insert({
-      user_id: user.id,
-      daily_pokemon_id: pokemon.id,
-    });
+    try {
+      const { data } = await supabase
+        .from("games")
+        .insert({
+          user_id: user.id,
+          daily_pokemon_id: pokemon.id,
+        })
+        .select("*, guesses(*)")
+        .single();
+
+      return data;
+    } catch (error) {
+      console.error("Error creating game:", error);
+      return null;
+    }
   }
 }
 
-export async function submitGuess(guessName: string, dailyPokemonId: string) {
+export async function createGuess(guessName: string) {
   const supabase = await createClient();
 
-  const { data: answer } = await supabase
-    .from("daily_pokemon")
-    .select("pokemon_name")
-    .eq("id", dailyPokemonId)
-    .single();
+  let game: Awaited<ReturnType<typeof getUserGame>> | undefined =
+    await getUserGame();
+  if (!game) {
+    game = await createGame();
+  }
 
-  const isCorrect =
-    guessName.toLowerCase() === answer?.pokemon_name.toLowerCase();
+  if (!game) {
+    console.error("Game not found after creation");
+    // Hérna getum við gert ráð fyrir því að notandinn sé ekki skráður inn og sleppum alveg að vista guesses í gagnagrunn
+    return;
+  }
 
-  return { isCorrect, name: guessName };
+  try {
+    await supabase.from("guesses").insert({
+      game_id: game.id,
+      user_id: game.user_id,
+      guess_name: guessName,
+      attempt_number: game.guesses.length + 1,
+    });
+
+    // TODO: check if the guess is correct and update the game status if it is
+  } catch (error) {
+    console.error("Error submitting guess:", error);
+  }
 }

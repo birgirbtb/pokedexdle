@@ -60,7 +60,7 @@ export default async function Page() {
     return <div className="text-white">Error loading pokemon data</div>;
   }
 
-  const game = await getUserGame();
+  const game = user ? await getUserGame() : null;
 
   return (
     <main className="min-h-screen flex justify-center items-center p-4.5">

@@ -11,7 +11,7 @@ interface Pokemon {
 interface Props {
   maxAttempts?: number;
   attemptsUsed: number;
-  onGuess: (guessName: string) => void;
+  onGuess: (guessName: string) => Promise<void>;
 }
 
 export default function SearchPokemon({
@@ -47,10 +47,10 @@ export default function SearchPokemon({
     return () => clearTimeout(timeout);
   }, [searchInput, isTyping]);
 
-  const handleGuess = () => {
+  const handleGuess = async () => {
     if (!selectedPokemon) return;
 
-    onGuess(selectedPokemon.name);
+    await onGuess(selectedPokemon.name);
 
     setSearchInput("");
     setSelectedPokemon(null);
