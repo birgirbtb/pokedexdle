@@ -71,7 +71,7 @@ export default async function Page() {
           <div className="flex items-center justify-between gap-4 p-4">
             <div>
               <div className="text-white inline-block py-1.5 px-3 rounded-full bg-black/25 border border-white/12">
-                Pokedexle
+                Pokédexdle
               </div>
               <div className="text-[#9aa6c3] text-[13px]">
                 Guess the Pokémon
