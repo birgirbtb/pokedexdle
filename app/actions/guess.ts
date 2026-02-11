@@ -26,7 +26,7 @@ export async function getUserGame() {
 
     const { data: game } = await supabase
       .from("games")
-      .select("*")
+      .select("*, guesses(*)")
       .eq("user_id", user.id)
       .eq("daily_pokemon_id", pokemon.id)
       .single();
