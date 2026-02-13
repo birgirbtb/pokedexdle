@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import SearchPokemon from "./SearchPokemon";
 import Hints from "./Hints";
 import Pokedex from "pokedex-promise-v2";
 import { Dialog } from "radix-ui";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { createGuess, getUserGame } from "../actions/guess";
-import { createClient } from "@/lib/supabase/client";
+import { createGuess, endGame, getUserGame } from "../actions/guess";
 
 type Props = {
   pokemon: Pokedex.Pokemon | null;
@@ -52,7 +51,9 @@ export default function GameClient({
 
       setTimeout(() => {
         setOpen(true);
-      }, 800);
+      }, 500);
+
+      await endGame(true);
 
       return;
     }
@@ -61,7 +62,9 @@ export default function GameClient({
       // Game over, reveal correct answer
       setTimeout(() => {
         setOpen(true);
-      }, 800);
+      }, 500);
+
+      await endGame(false);
     }
   }
 

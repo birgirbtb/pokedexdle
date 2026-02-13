@@ -97,3 +97,31 @@ export async function createGuess(guessName: string) {
     console.error("Error submitting guess:", error);
   }
 }
+
+export async function endGame(won: boolean) {
+  const supabase = await createClient();
+
+  let game: Awaited<ReturnType<typeof getUserGame>> | undefined =
+    await getUserGame();
+  if (!game) {
+    game = await createGame();
+  }
+
+  if (!game) {
+    console.error("Game not found after creation");
+    // Hérna getum við gert ráð fyrir því að notandinn sé ekki skráður inn og sleppum alveg að vista guesses í gagnagrunn
+    return;
+  }
+
+  try {
+    await supabase
+      .from("games")
+      .update({
+        won,
+        is_finished: true,
+      })
+      .eq("id", game.id);
+  } catch (error) {
+    console.error("Error ending game:", error);
+  }
+}
