@@ -104,16 +104,19 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin: boolean
           email: string
           id: string
           username: string
         }
         Insert: {
+          admin?: boolean
           email: string
           id: string
           username: string
         }
         Update: {
+          admin?: boolean
           email?: string
           id?: string
           username?: string

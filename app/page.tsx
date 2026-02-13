@@ -36,6 +36,16 @@ export default async function Page() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  let isAdmin = false;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("admin")
+      .eq("id", user.id)
+      .single();
+    isAdmin = data?.admin || false;
+  }
+
   const pokemonData = await getTodaysPokemon();
 
   let pokemon: Pokedex.Pokemon & { evolutionStage?: number };
@@ -94,7 +104,12 @@ export default async function Page() {
         </header>
 
         <section className="p-4.5 flex flex-col items-center gap-3.5">
-          <GameClient pokemon={pokemon} generation={generation} game={game} />
+          <GameClient
+            pokemon={pokemon}
+            generation={generation}
+            game={game}
+            isAdmin={isAdmin}
+          />
         </section>
       </div>
     </main>

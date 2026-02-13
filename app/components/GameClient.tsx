@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import SearchPokemon from "./SearchPokemon";
 import Hints from "./Hints";
@@ -8,12 +8,14 @@ import Pokedex from "pokedex-promise-v2";
 import { Dialog } from "radix-ui";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { createGuess, getUserGame } from "../actions/guess";
+import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   pokemon: Pokedex.Pokemon | null;
   generation: string | null;
   maxAttempts?: number;
   game?: Awaited<ReturnType<typeof getUserGame>>;
+  isAdmin: boolean;
 };
 
 export default function GameClient({
@@ -21,6 +23,7 @@ export default function GameClient({
   generation,
   maxAttempts = 6,
   game,
+  isAdmin,
 }: Props) {
   const [attemptsUsed, setAttemptsUsed] = useState(game?.guesses.length || 0);
   const [won, setWon] = useState(game?.won || false);
@@ -183,6 +186,24 @@ export default function GameClient({
             generation={generation}
             revealedHints={attemptsUsed}
           />
+
+          {/* DEBUG: Auto Win / Auto Lose (for development) */}
+          {isAdmin && (
+            <div className="w-full max-w-190 mt-2 flex justify-center gap-3">
+              <button
+                onClick={handleAutoWin}
+                className="px-4 py-2 rounded-xl bg-linear-to-r from-[#22c55e] to-[#16a34a] text-white font-bold shadow hover:scale-105 transition-transform"
+              >
+                Auto Win
+              </button>
+              <button
+                onClick={handleAutoLose}
+                className="px-4 py-2 rounded-xl bg-linear-to-r from-[#ef4444] to-[#dc2626] text-white font-bold shadow hover:scale-105 transition-transform"
+              >
+                Auto Lose
+              </button>
+            </div>
+          )}
 
           {/* SEARCH */}
           <SearchPokemon
