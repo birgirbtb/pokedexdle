@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import Pokedex from "pokedex-promise-v2";
 import GameClient from "./components/GameClient";
 import { getTodaysPokemon, getUserGame } from "./actions/guess";
+import { getUserStats } from "./actions/stats";
 
 const P = new Pokedex();
 
@@ -74,6 +75,7 @@ export default async function Page() {
   }
 
   const game = user ? await getUserGame() : null;
+  const stats = user ? await getUserStats() : null;
 
   return (
     <main className="min-h-screen flex justify-center items-center p-4.5">
@@ -112,6 +114,7 @@ export default async function Page() {
             generation={generation}
             game={game}
             nextGuessAt={nextGuessAt.toISOString()}
+            stats={stats}
             isAdmin={isAdmin}
           />
         </section>
