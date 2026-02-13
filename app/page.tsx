@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Pokedex from "pokedex-promise-v2";
 import GameFrame from "./components/GameFrame";
 import GameClient from "./components/GameClient";
-import { getTodaysPokemon, getUserGame } from "./actions/guess";
+import { getTodaysPokemon, getUserGame } from "@/lib/actions/guess";
 
 const P = new Pokedex();
 

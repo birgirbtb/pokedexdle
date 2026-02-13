@@ -72,17 +72,8 @@ export async function createGame() {
 export async function createGuess(guessName: string) {
   const supabase = await createClient();
 
-  let game: Awaited<ReturnType<typeof getUserGame>> | undefined =
-    await getUserGame();
-  if (!game) {
-    game = await createGame();
-  }
-
-  if (!game) {
-    console.error("Game not found after creation");
-    // Hérna getum við gert ráð fyrir því að notandinn sé ekki skráður inn og sleppum alveg að vista guesses í gagnagrunn
-    return;
-  }
+  const game = await getOrCreateGame();
+  if (!game) return;
 
   try {
     await supabase.from("guesses").insert({
@@ -101,17 +92,8 @@ export async function createGuess(guessName: string) {
 export async function endGame(won: boolean) {
   const supabase = await createClient();
 
-  let game: Awaited<ReturnType<typeof getUserGame>> | undefined =
-    await getUserGame();
-  if (!game) {
-    game = await createGame();
-  }
-
-  if (!game) {
-    console.error("Game not found after creation");
-    // Hérna getum við gert ráð fyrir því að notandinn sé ekki skráður inn og sleppum alveg að vista guesses í gagnagrunn
-    return;
-  }
+  const game = await getOrCreateGame();
+  if (!game) return;
 
   try {
     await supabase
@@ -124,4 +106,20 @@ export async function endGame(won: boolean) {
   } catch (error) {
     console.error("Error ending game:", error);
   }
+}
+
+async function getOrCreateGame() {
+  let game: Awaited<ReturnType<typeof getUserGame>> | undefined =
+    await getUserGame();
+  if (!game) {
+    game = await createGame();
+  }
+
+  if (!game) {
+    console.error("Game not found after creation");
+    // Hérna getum við gert ráð fyrir því að notandinn sé ekki skráður inn og sleppum alveg að vista guesses í gagnagrunn
+    return null;
+  }
+
+  return game;
 }

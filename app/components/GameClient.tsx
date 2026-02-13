@@ -7,7 +7,7 @@ import Hints from "./Hints";
 import Pokedex from "pokedex-promise-v2";
 import { Dialog } from "radix-ui";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { createGuess, endGame, getUserGame } from "../actions/guess";
+import { createGuess, endGame, getUserGame } from "@/lib/actions/guess";
 
 type Props = {
   pokemon: Pokedex.Pokemon | null;
@@ -30,6 +30,7 @@ export default function GameClient({
   const [won, setWon] = useState(game?.won || false);
   const [previousGuesses, setPreviousGuesses] = useState<string[]>(
     game?.guesses
+      .slice()
       .sort((a, b) => a.attempt_number - b.attempt_number)
       .map((guess) => guess.guess_name) || [],
   );
@@ -87,7 +88,7 @@ export default function GameClient({
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm data-[state=open]:animate-overlayShow z-40" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-gradient-to-b from-[rgba(17,28,51,0.98)] to-[rgba(15,23,42,0.98)] shadow-2xl p-8 flex flex-col items-center gap-4 z-50">
+          <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] max-w-105 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.98)] to-[rgba(15,23,42,0.98)] shadow-2xl p-8 flex flex-col items-center gap-4 z-50">
             <button
               className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
               onClick={() => setOpen(false)}
@@ -125,7 +126,7 @@ export default function GameClient({
             </Dialog.Title>
             <div className="w-full flex flex-col items-center gap-2 mt-2">
               <button
-                className="mt-2 px-6 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-rose-500 text-white font-bold shadow hover:scale-105 transition-transform"
+                className="mt-2 px-6 py-2 rounded-xl bg-linear-to-r from-blue-500 to-rose-500 text-white font-bold shadow hover:scale-105 transition-transform"
                 onClick={() => setOpen(false)}
               >
                 Close

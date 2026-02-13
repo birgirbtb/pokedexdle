@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { searchPokemon } from "@/app/actions/pokemon";
+import { searchPokemon } from "@/lib/actions/pokemon";
 
 interface Pokemon {
   name: string;
