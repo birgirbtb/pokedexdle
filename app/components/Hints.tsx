@@ -6,6 +6,11 @@ type Props = {
   revealedHints: number;
 };
 
+function capitalize(value: string): string {
+  if (!value) return value;
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 function romanToInt(roman: string): number {
   const romanMap: Record<string, number> = {
     I: 1,
@@ -45,7 +50,7 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
 
   // First wrong guess → primary type
   if (revealedHints >= 1 && types[0]) {
-    hints.push(`Type: ${types[0].type.name}`);
+    hints.push(`Type: ${capitalize(types[0].type.name)}`);
   } else {
     hints.push("Type: ???");
   }
@@ -53,7 +58,8 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
   // Second wrong guess → secondary type OR None
   if (revealedHints >= 2) {
     hints.push(
-      `Secondary Type: ${types[1] ? types[1].type.name : "None"}`);
+      `Secondary Type: ${types[1] ? capitalize(types[1].type.name) : "None"}`,
+    );
   } else {
     hints.push("Secondary Type: ???");
   }
@@ -67,7 +73,7 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
 
   // Fourth wrong guess → generation
   if (revealedHints >= 4 && generation) {
-    const genNumber = generationToNumber(generation)
+    const genNumber = generationToNumber(generation);
     hints.push(`Generation: ${genNumber}`);
   } else {
     hints.push("Generation: ???");
