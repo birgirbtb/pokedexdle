@@ -187,7 +187,7 @@ export default function GameClient({
           <Hints
             pokemon={pokemon}
             generation={generation}
-            revealedHints={attemptsUsed}
+            revealedHints={won ? maxAttempts : attemptsUsed}
           />
 
           {/* DEBUG: Auto Win / Auto Lose (for development) */}
