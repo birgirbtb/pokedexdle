@@ -84,7 +84,7 @@ export default async function Page() {
                 <LogOut />
               ) : (
                 <Link href="/login">
-                  <button className="border border-white/[0.14] bg-black/10 text-[#e8eefc] py-2.5 px-3.5 rounded-xl font-bold">
+                  <button className="border border-white/[0.14] bg-black/10 text-[#e8eefc] py-2.5 px-3.5 rounded-xl font-bold cursor-pointer">
                     Login
                   </button>
                 </Link>
