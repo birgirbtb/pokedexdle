@@ -8,6 +8,7 @@ import Pokedex from "pokedex-promise-v2";
 import { Dialog } from "radix-ui";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { createGuess, endGame, getUserGame } from "@/lib/actions/guess";
+import type { UserStats } from "@/lib/actions/stats";
 
 type Props = {
   pokemon: Pokedex.Pokemon | null;
@@ -15,6 +16,7 @@ type Props = {
   maxAttempts?: number;
   game?: Awaited<ReturnType<typeof getUserGame>>;
   nextGuessAt: string;
+  stats?: UserStats | null;
   isAdmin: boolean;
 };
 
@@ -24,6 +26,7 @@ export default function GameClient({
   maxAttempts = 6,
   game,
   nextGuessAt,
+  stats,
   isAdmin,
 }: Props) {
   const [attemptsUsed, setAttemptsUsed] = useState(game?.guesses.length || 0);
@@ -183,7 +186,44 @@ export default function GameClient({
               </div>
             </div>
 
-            <div />
+            <div className="flex justify-start pl-6">
+              <div className="w-40 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-4">
+                <div className="text-white font-medium mb-2">Your Stats</div>
+
+                {stats ? (
+                  <div className="flex flex-col gap-2 text-sm">
+                    <div className="flex items-center justify-between text-[#9aa6c3]">
+                      <span>Wins</span>
+                      <span className="text-white font-semibold">
+                        {stats.totalWins}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[#9aa6c3]">
+                      <span>Games</span>
+                      <span className="text-white font-semibold">
+                        {stats.totalGames}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[#9aa6c3]">
+                      <span>Streak</span>
+                      <span className="text-white font-semibold">
+                        {stats.currentStreak}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[#9aa6c3]">
+                      <span>Best</span>
+                      <span className="text-white font-semibold">
+                        {stats.bestStreak}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[#9aa6c3] text-sm">
+                    Login to track stats
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* HINTS */}

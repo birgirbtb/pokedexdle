@@ -4,6 +4,7 @@ import Pokedex from "pokedex-promise-v2";
 import GameFrame from "./components/GameFrame";
 import GameClient from "./components/GameClient";
 import { getTodaysPokemon, getUserGame } from "@/lib/actions/guess";
+import { getUserStats } from "@/lib/actions/stats";
 
 const P = new Pokedex();
 
@@ -74,6 +75,7 @@ export default async function Page() {
   }
 
   const game = user ? await getUserGame() : null;
+  const stats = user ? await getUserStats() : null;
 
   return (
     <GameFrame
@@ -90,6 +92,7 @@ export default async function Page() {
         generation={generation}
         game={game}
         nextGuessAt={nextGuessAt.toISOString()}
+        stats={stats}
         isAdmin={isAdmin}
       />
     </GameFrame>
