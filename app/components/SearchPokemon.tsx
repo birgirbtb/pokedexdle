@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { searchPokemon } from "@/app/actions/pokemon";
+import { searchPokemon } from "@/lib/actions/pokemon";
 
 interface Pokemon {
   name: string;
@@ -9,27 +9,35 @@ interface Pokemon {
 }
 
 interface Props {
-  correctPokemon: string;
   maxAttempts?: number;
-  onGuess?: (isCorrect: boolean, guessName: string) => void;
+  attemptsUsed: number;
+  onGuess: (guessName: string) => Promise<void>;
+  disabled?: boolean;
+  nextGuessAt?: string;
 }
 
 export default function SearchPokemon({
-  correctPokemon,
   maxAttempts = 6,
+  attemptsUsed,
   onGuess,
+  disabled = false,
+  nextGuessAt,
 }: Props) {
   const [searchInput, setSearchInput] = useState("");
   const [results, setResults] = useState<Pokemon[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [incorrectGuesses, setIncorrectGuesses] = useState(0);
+  const [cooldownText, setCooldownText] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isTyping || !searchInput.trim()) {
+      /*
+        Veit ekki afhverju það byrjar að kvarta hér en þetta virkar eins og það á að gera
+      */
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([]);
       setShowDropdown(false);
       return;
@@ -44,17 +52,46 @@ export default function SearchPokemon({
     return () => clearTimeout(timeout);
   }, [searchInput, isTyping]);
 
-  const handleGuess = () => {
-    if (!selectedPokemon) return;
-
-    const isCorrect =
-      selectedPokemon.name.toLowerCase() === correctPokemon.toLowerCase();
-
-    if (!isCorrect) {
-      setIncorrectGuesses((prev) => Math.min(prev + 1, maxAttempts));
+  useEffect(() => {
+    if (!disabled || !nextGuessAt) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCooldownText(null);
+      return;
     }
 
-    onGuess?.(isCorrect, selectedPokemon.name);
+    setShowDropdown(false);
+    setIsTyping(false);
+
+    const target = new Date(nextGuessAt).getTime();
+    if (Number.isNaN(target)) {
+      setCooldownText(null);
+      return;
+    }
+
+    const updateCooldown = () => {
+      const remainingMs = Math.max(0, target - Date.now());
+      const totalSeconds = Math.ceil(remainingMs / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      setCooldownText(
+        `Next guess in ${String(hours).padStart(2, "0")}:${String(
+          minutes,
+        ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`,
+      );
+    };
+
+    updateCooldown();
+    const interval = setInterval(updateCooldown, 1000);
+
+    return () => clearInterval(interval);
+  }, [disabled, nextGuessAt]);
+
+  const handleGuess = async () => {
+    if (disabled) return;
+    if (!selectedPokemon) return;
+
+    await onGuess(selectedPokemon.name);
 
     setSearchInput("");
     setSelectedPokemon(null);
@@ -71,29 +108,43 @@ export default function SearchPokemon({
       </div>
 
       {/* Input */}
-      <div className="h-12 rounded-[14px] border border-white/[0.14] bg-linear-to-b from-white/10 to-black/18 grid grid-cols-[1fr_120px] items-center overflow-hidden">
+      <div
+        className={`relative h-12 rounded-[14px] border border-white/[0.14] bg-linear-to-b from-white/10 to-black/18 grid grid-cols-[1fr_120px] items-center overflow-hidden ${
+          disabled ? "opacity-60" : ""
+        }`}
+        aria-disabled={disabled}
+      >
         <input
           ref={inputRef}
           value={searchInput}
           onChange={(e) => {
+            if (disabled) return;
             setSearchInput(e.target.value);
             setIsTyping(true);
             setShowDropdown(true);
           }}
           placeholder="Search Pokémon..."
-          className="w-full h-full bg-transparent border-none outline-none px-3 text-sm font-bold text-[#e8eefc] placeholder:text-[rgba(154,166,195,0.7)]"
+          disabled={disabled}
+          className="w-full h-full bg-transparent border-none outline-none px-3 text-sm font-bold text-[#e8eefc] placeholder:text-[rgba(154,166,195,0.7)] disabled:cursor-not-allowed"
         />
 
         <button
           onClick={handleGuess}
-          className="h-full border-l border-white/12 bg-linear-to-b from-[#22c55e] to-[#16a34a] text-white font-bold cursor-pointer select-none active:translate-y-px"
+          disabled={disabled}
+          className="h-full border-l border-white/12 bg-linear-to-b from-[#22c55e] to-[#16a34a] text-white font-bold cursor-pointer select-none active:translate-y-px disabled:cursor-not-allowed disabled:opacity-70"
         >
           Guess
         </button>
+
+        {disabled && cooldownText && (
+          <div className="absolute inset-0 grid place-items-center text-xs font-semibold text-[#e8eefc] bg-[rgba(15,23,42,0.75)]">
+            {cooldownText}
+          </div>
+        )}
       </div>
 
       {/* Dropdown */}
-      {showDropdown && results.length > 0 && (
+      {showDropdown && results.length > 0 && !disabled && (
         <div className="mt-2.5 rounded-[14px] overflow-hidden border border-white/10 bg-[rgba(15,23,42,0.92)]">
           {results.slice(0, 3).map((pokemon) => (
             <div
@@ -110,8 +161,7 @@ export default function SearchPokemon({
               <span className="w-2.5 h-2.5 rounded-full bg-[rgba(229,72,77,0.9)] shadow-[0_0_0_2px_rgba(255,255,255,0.12)_inset]" />
 
               <span className="text-[#e8eefc]">
-                {pokemon.name.charAt(0).toUpperCase() +
-                  pokemon.name.slice(1)}
+                {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
               </span>
             </div>
           ))}
@@ -127,7 +177,7 @@ export default function SearchPokemon({
               className={`
                 w-5.5 h-5.5 rotate-45 rounded-[3px] border
                 ${
-                  i < incorrectGuesses
+                  i < attemptsUsed
                     ? "bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                     : "bg-white/80 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                 }
@@ -137,7 +187,7 @@ export default function SearchPokemon({
         </div>
 
         <div className="text-[#9aa6c3] text-xs font-medium">
-          {incorrectGuesses} / {maxAttempts} attempts used
+          {attemptsUsed} / {maxAttempts} attempts used
         </div>
       </div>
     </div>
