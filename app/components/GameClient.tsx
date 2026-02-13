@@ -14,6 +14,7 @@ type Props = {
   generation: string | null;
   maxAttempts?: number;
   game?: Awaited<ReturnType<typeof getUserGame>>;
+  nextGuessAt: string;
   isAdmin: boolean;
 };
 
@@ -22,6 +23,7 @@ export default function GameClient({
   generation,
   maxAttempts = 6,
   game,
+  nextGuessAt,
   isAdmin,
 }: Props) {
   const [attemptsUsed, setAttemptsUsed] = useState(game?.guesses.length || 0);
@@ -213,6 +215,8 @@ export default function GameClient({
             maxAttempts={maxAttempts}
             attemptsUsed={attemptsUsed}
             onGuess={handleGuess}
+            disabled={gameOver || won}
+            nextGuessAt={nextGuessAt}
           />
         </div>
       </div>

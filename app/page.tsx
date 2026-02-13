@@ -56,6 +56,9 @@ export default async function Page() {
   }
 
   const correctPokemon = pokemonData.pokemon_name;
+  const availableOn = pokemonData.available_on;
+  const nextGuessAt = new Date(`${availableOn}T00:00:00.000Z`);
+  nextGuessAt.setUTCDate(nextGuessAt.getUTCDate() + 1);
 
   try {
     const speciesData = await P.getPokemonSpeciesByName(correctPokemon);
@@ -108,6 +111,7 @@ export default async function Page() {
             pokemon={pokemon}
             generation={generation}
             game={game}
+            nextGuessAt={nextGuessAt.toISOString()}
             isAdmin={isAdmin}
           />
         </section>
