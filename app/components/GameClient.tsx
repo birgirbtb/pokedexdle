@@ -225,7 +225,14 @@ export default function GameClient({
               </div>
             </div>
           </div>
-
+          {/* Pokemon Name */}
+          {(won || gameOver) && pokemon?.name && (
+            <div className="rounded-full py-2.5 px-3.5 bg-black/22 border border-white/12 text-white hover:bg-black/30">
+              <div className="text-4xl font-extrabold text-yellow-300 tracking-wide drop-shadow-lg">
+                {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
+          </div>
+          </div>
+          )}
           {/* HINTS */}
           <Hints
             pokemon={pokemon}
