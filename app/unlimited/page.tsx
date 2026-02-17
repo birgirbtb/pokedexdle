@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import Pokedex from "pokedex-promise-v2";
 import GameFrame from "../components/GameFrame";
 import GameClient from "../components/GameClient";
-import { getUserGame } from "@/lib/actions/guess";
 import { getUserStats } from "@/lib/actions/stats";
 
 const P = new Pokedex();
@@ -67,7 +66,7 @@ export default async function Page() {
     return <div className="text-white">Error loading pokemon data</div>;
   }
 
-  const game = user ? await getUserGame() : null;
+  const game = null; // Unlimited mode should always start fresh
   const stats = user ? await getUserStats() : null;
 
   return (
@@ -87,6 +86,7 @@ export default async function Page() {
         nextGuessAt=""
         stats={stats}
         isAdmin={isAdmin}
+        isUnlimited={true}
       />
     </GameFrame>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import SearchPokemon from "./SearchPokemon";
 import Hints from "./Hints";
@@ -18,6 +19,7 @@ type Props = {
   nextGuessAt: string;
   stats?: UserStats | null;
   isAdmin: boolean;
+  isUnlimited?: boolean;
 };
 
 export default function GameClient({
@@ -28,6 +30,7 @@ export default function GameClient({
   nextGuessAt,
   stats,
   isAdmin,
+  isUnlimited = false,
 }: Props) {
   const [attemptsUsed, setAttemptsUsed] = useState(game?.guesses.length || 0);
   const [won, setWon] = useState(game?.won || false);
@@ -49,7 +52,10 @@ export default function GameClient({
     const nextAttempts = attemptsUsed + 1;
     setAttemptsUsed(nextAttempts);
 
-    await createGuess(guessName);
+    // Only save to database if not in unlimited mode
+    if (!isUnlimited) {
+      await createGuess(guessName);
+    }
 
     if (guessName.toLowerCase() === pokemon?.name.toLowerCase()) {
       // User guessed correctly
@@ -59,7 +65,10 @@ export default function GameClient({
         setOpen(true);
       }, 500);
 
-      await endGame(true);
+      // Only save to database if not in unlimited mode
+      if (!isUnlimited) {
+        await endGame(true);
+      }
 
       return;
     }
@@ -70,7 +79,10 @@ export default function GameClient({
         setOpen(true);
       }, 500);
 
-      await endGame(false);
+      // Only save to database if not in unlimited mode
+      if (!isUnlimited) {
+        await endGame(false);
+      }
     }
   }
 
@@ -127,7 +139,44 @@ export default function GameClient({
                 </>
               )}
             </Dialog.Title>
-            <div className="w-full flex flex-col items-center gap-2 mt-2">
+            <div className="w-full flex flex-col items-center gap-4 mt-4">
+              {stats && (
+                <div className="w-full flex flex-col gap-2 text-sm bg-white/5 rounded-xl p-4 border border-white/10">
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Wins</span>
+                    <span className="text-white font-semibold">
+                      {stats.totalWins}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Games</span>
+                    <span className="text-white font-semibold">
+                      {stats.totalGames}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Win Rate</span>
+                    <span className="text-white font-semibold">
+                      {stats.totalGames > 0
+                        ? ((stats.totalWins / stats.totalGames) * 100).toFixed(1)
+                        : 0}
+                      %
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Streak</span>
+                    <span className="text-white font-semibold">
+                      {stats.currentStreak}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Best</span>
+                    <span className="text-white font-semibold">
+                      {stats.bestStreak}
+                    </span>
+                  </div>
+                </div>
+              )}
               <button
                 className="mt-2 px-6 py-2 rounded-xl bg-linear-to-r cursor-pointer from-blue-500 to-rose-500 text-white font-bold shadow hover:scale-105 transition-transform"
                 onClick={() => setOpen(false)}
@@ -187,41 +236,34 @@ export default function GameClient({
             </div>
 
             <div className="flex justify-start pl-6">
-              <div className="w-40 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-4">
-                <div className="text-white font-medium mb-2">Your Stats</div>
-
-                {stats ? (
-                  <div className="flex flex-col gap-2 text-sm">
-                    <div className="flex items-center justify-between text-[#9aa6c3]">
-                      <span>Wins</span>
-                      <span className="text-white font-semibold">
-                        {stats.totalWins}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[#9aa6c3]">
-                      <span>Games</span>
-                      <span className="text-white font-semibold">
-                        {stats.totalGames}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[#9aa6c3]">
-                      <span>Streak</span>
-                      <span className="text-white font-semibold">
-                        {stats.currentStreak}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[#9aa6c3]">
-                      <span>Best</span>
-                      <span className="text-white font-semibold">
-                        {stats.bestStreak}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-[#9aa6c3] text-sm">
-                    Login to track stats
-                  </div>
-                )}
+              <div className="w-40 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-4 flex flex-col gap-3">
+                <button
+                  onClick={() => setOpen(true)}
+                  className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 17"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
+                  </svg>
+                  Stats
+                </button>
+                <Link href={isUnlimited ? "/" : "/unlimited"} className="w-full">
+                  <button className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
+                    {isUnlimited ? (
+                      <>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Daily Puzzle
+                      </>
+                    ) : (
+                      <>
+                        ∞ Unlimited
+                      </>
+                    )}
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
