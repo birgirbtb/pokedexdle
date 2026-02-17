@@ -14,6 +14,7 @@ interface Props {
   onGuess: (guessName: string) => Promise<void>;
   disabled?: boolean;
   nextGuessAt?: string;
+  won?: boolean;
 }
 
 export default function SearchPokemon({
@@ -22,6 +23,7 @@ export default function SearchPokemon({
   onGuess,
   disabled = false,
   nextGuessAt,
+  won = false,
 }: Props) {
   const [searchInput, setSearchInput] = useState("");
   const [results, setResults] = useState<Pokemon[]>([]);
@@ -178,7 +180,9 @@ export default function SearchPokemon({
                 w-5.5 h-5.5 rotate-45 rounded-[3px] border
                 ${
                   i < attemptsUsed
-                    ? "bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
+                    ? won
+                      ? "bg-green-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
+                      : "bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                     : "bg-white/80 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                 }
               `}

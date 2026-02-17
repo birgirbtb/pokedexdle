@@ -258,6 +258,7 @@ export default function GameClient({
             onGuess={handleGuess}
             disabled={gameOver || won}
             nextGuessAt={nextGuessAt}
+            won={won}
           />
         </div>
       </div>
