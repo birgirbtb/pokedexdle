@@ -214,8 +214,5 @@ export async function signup(state: FormState, formData: FormData) {
       };
   }
 
-  /* ----------------------------- Success --------------------------------- */
-
-  // After successful signup, send user to login page
-  redirect("/login");
+  redirect("/");
 }

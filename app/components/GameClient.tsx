@@ -383,6 +383,7 @@ export default function GameClient({
                 attemptsUsed={attemptsUsed}
                 disabled={gameOver || won}
                 nextGuessAt={nextGuessAt}
+            won={won}
                 // Callback used to submit a guess (sends name back to this component)
                 onGuess={handleGuess}
               />

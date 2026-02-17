@@ -30,11 +30,12 @@ interface Pokemon {
 
 // Props passed from the parent (GameClient).
 interface Props {
-  maxAttempts?: number; // Total attempts allowed (default 6)
-  attemptsUsed: number; // Attempts used so far (shown in UI)
-  onGuess: (guessName: string) => Promise<void>; // Called after user confirms a guess
-  disabled?: boolean; // Disable input + guess (e.g. game over or cooldown)
-  nextGuessAt?: string; // ISO string timestamp for next allowed guess (cooldown overlay)
+  maxAttempts?: number;
+  attemptsUsed: number;
+  onGuess: (guessName: string) => Promise<void>;
+  disabled?: boolean;
+  nextGuessAt?: string;
+  won?: boolean;
 }
 
 /* ------------------------------ Component --------------------------------- */
@@ -45,6 +46,7 @@ export default function SearchPokemon({
   onGuess,
   disabled = false, // Default to enabled
   nextGuessAt,
+  won = false,
 }: Props) {
   /* ------------------------------- State ---------------------------------- */
 
@@ -306,9 +308,9 @@ export default function SearchPokemon({
                 w-5.5 h-5.5 rotate-45 rounded-[3px] border
                 ${
                   i < attemptsUsed
-                    // Used attempts: red diamond
-                    ? "bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
-                    // Remaining attempts: light diamond
+                    ? i === attemptsUsed - 1 && won
+                      ? "bg-green-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
+                      : "bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                     : "bg-white/80 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                 }
               `}
