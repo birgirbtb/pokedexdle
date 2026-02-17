@@ -10,6 +10,7 @@ import { Dialog } from "radix-ui";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { createGuess, endGame, getUserGame } from "@/lib/actions/guess";
 import type { UserStats } from "@/lib/actions/stats";
+import { ChartLine, Clock, Infinity } from 'lucide-react';
 
 type Props = {
   pokemon: Pokedex.Pokemon | null;
@@ -259,25 +260,20 @@ export default function GameClient({
                   onClick={() => setOpen(true)}
                   className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 17"></polyline>
-                    <polyline points="17 6 23 6 23 12"></polyline>
-                  </svg>
+                  <ChartLine/>
                   Stats
                 </button>
                 <Link href={isUnlimited ? "/" : "/unlimited"} className="w-full">
                   <button className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
                     {isUnlimited ? (
                       <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
+                        <Clock/>
                         Daily Puzzle
                       </>
                     ) : (
                       <>
-                        ∞ Unlimited
+                        <Infinity/> 
+                        Unlimited
                       </>
                     )}
                   </button>
