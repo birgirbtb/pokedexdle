@@ -180,7 +180,11 @@ export default function SearchPokemon({
                 w-5.5 h-5.5 rotate-45 rounded-[3px] border
                 ${
                   i < attemptsUsed
+<<<<<<< Updated upstream
                     ? won
+=======
+                    ? i === attemptsUsed - 1 && won
+>>>>>>> Stashed changes
                       ? "bg-green-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                       : "bg-red-500 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
                     : "bg-white/80 border-white/18 shadow-[0_10px_18px_rgba(0,0,0,0.3)]"
