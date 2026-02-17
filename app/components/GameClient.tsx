@@ -177,12 +177,22 @@ export default function GameClient({
                   </div>
                 </div>
               )}
-              <button
-                className="mt-2 px-6 py-2 rounded-xl bg-linear-to-r cursor-pointer from-blue-500 to-rose-500 text-white font-bold shadow hover:scale-105 transition-transform"
-                onClick={() => setOpen(false)}
-              >
-                Close
-              </button>
+              <div className="flex gap-3 w-full justify-center">
+                <button
+                  className="mt-2 px-6 py-2 rounded-xl bg-linear-to-r cursor-pointer from-blue-500 to-rose-500 text-white font-bold shadow hover:scale-105 transition-transform"
+                  onClick={() => setOpen(false)}
+                >
+                  Close
+                </button>
+                {isUnlimited && (gameOver || won) && (
+                  <button
+                    className="mt-2 px-6 py-2 rounded-xl bg-linear-to-r cursor-pointer from-green-500 to-emerald-500 text-white font-bold shadow hover:scale-105 transition-transform"
+                    onClick={() => window.location.reload()}
+                  >
+                    Play Again
+                  </button>
+                )}
+              </div>
             </div>
           </Dialog.Content>
         </Dialog.Portal>
@@ -217,7 +227,7 @@ export default function GameClient({
             </div>
 
             {/* IMAGE */}
-            <div className="flex justify-center">
+            <div className="flex flex-col justify-center items-center gap-4">
               <div className="w-96 h-96 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] grid place-items-center">
                 {showImage &&
                 pokemon?.sprites?.other?.["official-artwork"]?.front_default ? (
@@ -233,6 +243,14 @@ export default function GameClient({
                   <span className="text-white text-6xl font-extrabold">?</span>
                 )}
               </div>
+              {isUnlimited && (gameOver || won) && (
+                <button
+                  className="px-6 py-2 rounded-xl bg-linear-to-r cursor-pointer from-green-500 to-emerald-500 text-white font-bold shadow hover:scale-105 transition-transform"
+                  onClick={() => window.location.reload()}
+                >
+                  Play Again
+                </button>
+              )}
             </div>
 
             <div className="flex justify-start pl-6">
