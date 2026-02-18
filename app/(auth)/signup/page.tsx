@@ -23,7 +23,7 @@
 
 import Input from "../components/Input"; // Custom styled input component
 import Button from "../components/Button"; // Custom styled button component
-import { useActionState } from "react"; // React hook for Server Actions (form actions) with state tracking
+import { useActionState, useState, useEffectEvent, useEffect } from "react"; // React hook for Server Actions (form actions) with state tracking
 import { signup } from "@/lib/actions/auth"; // Server action that performs signup + returns validation state
 import Link from "next/link"; // Next.js client navigation
 
@@ -34,6 +34,19 @@ export default function SignUp() {
   // - action: the function you put on the <form action={...}>
   // - pending: true while the server action is running (form submitting)
   const [state, action, pending] = useActionState(signup, undefined);
+  const [errors, setErrors] = useState(state?.errors);
+
+  const updateErrors = useEffectEvent((state: typeof errors) => {
+    setErrors(state);
+  });
+
+  useEffect(() => {
+    if (state) {
+      updateErrors(state.errors);
+    }
+  }, [state]);
+
+  const clearErrors = () => setErrors(undefined);
 
   return (
     /* ----------------------------- Outer Card ------------------------------ */
@@ -60,7 +73,10 @@ export default function SignUp() {
           {/* ----------------------------- Email ----------------------------- */}
           <div className="space-y-2">
             {/* Label */}
-            <label htmlFor="email" className="text-sm font-medium text-[#e8eefc]">
+            <label
+              htmlFor="email"
+              className="text-sm font-medium text-[#e8eefc]"
+            >
               Email
             </label>
 
@@ -73,14 +89,15 @@ export default function SignUp() {
               name="email"
               type="email"
               placeholder="yourname@gmail.com"
+              onChange={clearErrors}
             />
 
             {/* Validation error:
                 - Only show errors when NOT pending (prevents flashing while submitting)
                 - Reads field-specific error from state.errors.email
             */}
-            {!pending && state?.errors?.email && (
-              <p className="text-sm text-red-600">{state.errors.email}</p>
+            {!pending && errors?.email && (
+              <p className="text-sm text-red-600">{errors.email}</p>
             )}
           </div>
 
@@ -97,14 +114,20 @@ export default function SignUp() {
             {/* Input:
                 - name must match what your server action expects (username)
             */}
-            <Input id="username" name="username" type="text" placeholder="yourname" />
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="yourname"
+              onChange={clearErrors}
+            />
 
             {/* Validation error:
                 - Only show errors when NOT pending
                 - Reads field-specific error from state.errors.username
             */}
-            {!pending && state?.errors?.username && (
-              <p className="text-sm text-red-600">{state.errors.username}</p>
+            {!pending && errors?.username && (
+              <p className="text-sm text-red-600">{errors.username}</p>
             )}
           </div>
 
@@ -127,14 +150,15 @@ export default function SignUp() {
               name="password"
               type="password"
               placeholder="••••••••"
+              onChange={clearErrors}
             />
 
             {/* Validation error:
                 - Only show errors when NOT pending
                 - Reads field-specific error from state.errors.password
             */}
-            {!pending && state?.errors?.password && (
-              <p className="text-sm text-red-600">{state.errors.password}</p>
+            {!pending && errors?.password && (
+              <p className="text-sm text-red-600">{errors.password}</p>
             )}
           </div>
 
@@ -157,16 +181,15 @@ export default function SignUp() {
               name="confirmPassword"
               type="password"
               placeholder="••••••••"
+              onChange={clearErrors}
             />
 
             {/* Validation error:
                 - Only show errors when NOT pending
                 - Reads field-specific error from state.errors.confirmPassword
             */}
-            {!pending && state?.errors?.confirmPassword && (
-              <p className="text-sm text-red-600">
-                {state.errors.confirmPassword}
-              </p>
+            {!pending && errors?.confirmPassword && (
+              <p className="text-sm text-red-600">{errors.confirmPassword}</p>
             )}
           </div>
 

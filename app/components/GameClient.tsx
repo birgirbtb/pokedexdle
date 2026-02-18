@@ -87,33 +87,32 @@ export default function GameClient({
 
   // Submit a guess from SearchPokemon
   async function handleGuess(guessName: string) {
-    // Block guesses if already finished
     if (gameOver || won) return;
 
-    // Optimistic UI updates
+    const isCorrect = guessName.toLowerCase() === pokemon?.name.toLowerCase();
+
     setPreviousGuesses((prev) => [...prev, guessName]);
 
-    // Compute + apply next attempt count
+    // If correct = set won FIRST
+    if (isCorrect) {
+      setWon(true);
+    }
+
     const nextAttempts = attemptsUsed + 1;
     setAttemptsUsed(nextAttempts);
 
-    // Save guess only in daily mode
+    // Only save to database if not in unlimited mode
     if (!isUnlimited) {
       await createGuess(guessName);
     }
 
-    // Check correctness (guard pokemon existence)
-    const correctName = pokemon?.name?.toLowerCase();
-    const incomingName = guessName.toLowerCase();
+    if (isCorrect) {
+      // User guessed correctly
+      setTimeout(() => {
+        setOpen(true);
+      }, 500);
 
-    if (correctName && incomingName === correctName) {
-      // Mark win locally
-      setWon(true);
-
-      // Open dialog after small delay
-      setTimeout(() => setOpen(true), 500);
-
-      // Save game result only in daily mode
+      // Save guess only in daily mode
       if (!isUnlimited) {
         await endGame(true);
       }
@@ -121,11 +120,13 @@ export default function GameClient({
       return;
     }
 
-    // If that was the final attempt, end the game
     if (nextAttempts >= maxAttempts) {
-      setTimeout(() => setOpen(true), 500);
+      // Game over, reveal correct answer
+      setTimeout(() => {
+        setOpen(true);
+      }, 500);
 
-      // Save game result only in daily mode
+      // Only save to database if not in unlimited mode
       if (!isUnlimited) {
         await endGame(false);
       }
@@ -309,7 +310,9 @@ export default function GameClient({
                 {showImage &&
                 pokemon?.sprites?.other?.["official-artwork"]?.front_default ? (
                   <Image
-                    src={pokemon.sprites.other["official-artwork"].front_default}
+                    src={
+                      pokemon.sprites.other["official-artwork"].front_default
+                    }
                     alt={pokemon.name}
                     width={360}
                     height={360}
@@ -327,7 +330,8 @@ export default function GameClient({
               {(won || gameOver) && pokemon?.name && (
                 <div className="rounded-full py-2 px-4 bg-black/22 border border-white/12 text-white">
                   <div className="text-2xl sm:text-3xl font-extrabold text-yellow-300 tracking-wide drop-shadow-lg text-center">
-                    {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
+                    {pokemon.name.charAt(0).toUpperCase() +
+                      pokemon.name.slice(1)}
                   </div>
                 </div>
               )}
@@ -398,7 +402,10 @@ export default function GameClient({
                   </button>
 
                   {/* Toggle between daily and unlimited pages */}
-                  <Link href={isUnlimited ? "/" : "/unlimited"} className="w-full">
+                  <Link
+                    href={isUnlimited ? "/" : "/unlimited"}
+                    className="w-full"
+                  >
                     <button
                       type="button"
                       className="w-full min-h-[44px] px-3 py-2 rounded-xl text-white font-bold hover:bg-white/10 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2 border border-white/10 bg-white/5"

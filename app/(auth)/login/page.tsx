@@ -21,7 +21,7 @@
 
 import Input from "../components/Input"; // Custom styled input component
 import Button from "../components/Button"; // Custom styled button component
-import { useActionState } from "react"; // React hook for Server Actions (form actions) with state tracking
+import { useActionState, useState, useEffectEvent, useEffect } from "react"; // React hook for Server Actions (form actions) with state tracking
 import { login } from "@/lib/actions/auth"; // Server action that performs login + returns validation state
 import Link from "next/link"; // Next.js client navigation
 
@@ -32,6 +32,19 @@ export default function Login() {
   // - action: the function you put on the <form action={...}>
   // - pending: true while the server action is running (form submitting)
   const [state, action, pending] = useActionState(login, undefined);
+  const [errors, setErrors] = useState(state?.errors);
+
+  const updateErrors = useEffectEvent((state: typeof errors) => {
+    setErrors(state);
+  });
+
+  useEffect(() => {
+    if (state) {
+      updateErrors(state.errors);
+    }
+  }, [state]);
+
+  const clearErrors = () => setErrors(undefined);
 
   return (
     /* ----------------------------- Outer Card ------------------------------ */
@@ -74,16 +87,15 @@ export default function Login() {
               name="emailusername"
               type="text"
               placeholder="yourname@gmail.com"
+              onChange={clearErrors}
             />
 
             {/* Validation error:
                 - Only show errors when NOT pending (prevents flashing while submitting)
                 - Reads field-specific error from state.errors.emailusername
             */}
-            {!pending && state?.errors?.emailusername && (
-              <p className="text-sm text-red-600">
-                {state.errors.emailusername}
-              </p>
+            {!pending && errors?.emailusername && (
+              <p className="text-sm text-red-600">{errors.emailusername}</p>
             )}
           </div>
 
@@ -96,7 +108,6 @@ export default function Login() {
             >
               Password
             </label>
-
             {/* Input:
                 - name must match what your server action expects (password)
                 - type password hides characters
@@ -106,14 +117,14 @@ export default function Login() {
               name="password"
               type="password"
               placeholder="••••••••"
+              onChange={clearErrors}
             />
-
             {/* Validation error:
                 - Only show errors when NOT pending
                 - Reads field-specific error from state.errors.password
             */}
-            {!pending && state?.errors?.password && (
-              <p className="text-sm text-red-600">{state.errors.password}</p>
+            {!pending && errors?.password && (
+              <p className="text-sm text-red-600">{errors.password}</p>
             )}
           </div>
 
