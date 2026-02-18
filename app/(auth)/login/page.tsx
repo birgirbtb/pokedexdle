@@ -2,12 +2,25 @@
 
 import Input from "../components/Input";
 import Button from "../components/Button";
-import { useActionState } from "react";
+import { useActionState, useEffect, useEffectEvent, useState } from "react";
 import { login } from "@/lib/actions/auth";
 import Link from "next/link";
 
 export default function Login() {
   const [state, action, pending] = useActionState(login, undefined);
+  const [errors, setErrors] = useState(state?.errors);
+
+  const updateErrors = useEffectEvent((state: typeof errors) => {
+    setErrors(state);
+  });
+
+  useEffect(() => {
+    if (state) {
+      updateErrors(state.errors);
+    }
+  }, [state]);
+
+  const clearErrors = () => setErrors(undefined);
 
   return (
     <div className="relative w-full max-w-xl rounded-[18px] overflow-hidden bg-linear-to-b from-white/6 to-white/3 border border-white/10 shadow-[0_22px_55px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
@@ -31,11 +44,10 @@ export default function Login() {
               name="emailusername"
               type="text"
               placeholder="yourname@gmail.com"
+              onChange={clearErrors}
             />
-            {!pending && state?.errors?.emailusername && (
-              <p className="text-sm text-red-600">
-                {state.errors.emailusername}
-              </p>
+            {!pending && errors?.emailusername && (
+              <p className="text-sm text-red-600">{errors.emailusername}</p>
             )}
           </div>
 
@@ -51,9 +63,10 @@ export default function Login() {
               name="password"
               type="password"
               placeholder="••••••••"
+              onChange={clearErrors}
             />
-            {!pending && state?.errors?.password && (
-              <p className="text-sm text-red-600">{state.errors.password}</p>
+            {!pending && errors?.password && (
+              <p className="text-sm text-red-600">{errors.password}</p>
             )}
           </div>
 

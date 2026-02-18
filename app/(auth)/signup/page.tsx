@@ -2,12 +2,25 @@
 
 import Input from "../components/Input";
 import Button from "../components/Button";
-import { useActionState } from "react";
+import { useActionState, useEffect, useEffectEvent, useState } from "react";
 import { signup } from "@/lib/actions/auth";
 import Link from "next/link";
 
 export default function SignUp() {
   const [state, action, pending] = useActionState(signup, undefined);
+  const [errors, setErrors] = useState(state?.errors);
+
+  const updateErrors = useEffectEvent((state: typeof errors) => {
+    setErrors(state);
+  });
+
+  useEffect(() => {
+    if (state) {
+      updateErrors(state.errors);
+    }
+  }, [state]);
+
+  const clearErrors = () => setErrors(undefined);
 
   return (
     <div className="relative w-full max-w-xl rounded-[18px] overflow-hidden bg-linear-to-b from-white/6 to-white/3 border border-white/10 shadow-[0_22px_55px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
@@ -31,9 +44,10 @@ export default function SignUp() {
               name="email"
               type="email"
               placeholder="yourname@gmail.com"
+              onChange={clearErrors}
             />
-            {!pending && state?.errors?.email && (
-              <p className="text-sm text-red-600">{state.errors.email}</p>
+            {!pending && errors?.email && (
+              <p className="text-sm text-red-600">{errors.email}</p>
             )}
           </div>
 
@@ -49,9 +63,10 @@ export default function SignUp() {
               name="username"
               type="text"
               placeholder="yourname"
+              onChange={clearErrors}
             />
-            {!pending && state?.errors?.username && (
-              <p className="text-sm text-red-600">{state.errors.username}</p>
+            {!pending && errors?.username && (
+              <p className="text-sm text-red-600">{errors.username}</p>
             )}
           </div>
 
@@ -67,9 +82,10 @@ export default function SignUp() {
               name="password"
               type="password"
               placeholder="••••••••"
+              onChange={clearErrors}
             />
-            {!pending && state?.errors?.password && (
-              <p className="text-sm text-red-600">{state.errors.password}</p>
+            {!pending && errors?.password && (
+              <p className="text-sm text-red-600">{errors.password}</p>
             )}
           </div>
 
@@ -85,11 +101,10 @@ export default function SignUp() {
               name="confirmPassword"
               type="password"
               placeholder="••••••••"
+              onChange={clearErrors}
             />
-            {!pending && state?.errors?.confirmPassword && (
-              <p className="text-sm text-red-600">
-                {state.errors.confirmPassword}
-              </p>
+            {!pending && errors?.confirmPassword && (
+              <p className="text-sm text-red-600">{errors.confirmPassword}</p>
             )}
           </div>
 
