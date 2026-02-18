@@ -38,6 +38,18 @@ import type { UserStats } from "@/lib/actions/stats"; // Stats type for props
   stats: user stats fetched from server (optional; only for logged-in users)
   isAdmin: whether admin debug buttons should show
 */
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import SearchPokemon from "./SearchPokemon";
+import Hints from "./Hints";
+import Pokedex from "pokedex-promise-v2";
+import { Dialog } from "radix-ui";
+import { Cross2Icon } from "@radix-ui/react-icons";
+import { createGuess, endGame, getUserGame } from "@/lib/actions/guess";
+import type { UserStats } from "@/lib/actions/stats";
+import { ChartLine, Clock, Infinity } from 'lucide-react';
+
 type Props = {
   pokemon: Pokedex.Pokemon | null;
   generation: string | null;
@@ -46,6 +58,7 @@ type Props = {
   nextGuessAt: string;
   stats?: UserStats | null;
   isAdmin: boolean;
+  isUnlimited?: boolean;
 };
 
 /* ------------------------------ Component ---------------------------------- */
@@ -57,6 +70,7 @@ export default function GameClient({
   nextGuessAt,
   stats,
   isAdmin,
+  isUnlimited = false,
 }: Props) {
   /* ------------------------------- State ----------------------------------- */
 
@@ -103,6 +117,10 @@ export default function GameClient({
     const nextAttempts = attemptsUsed + 1;
     setAttemptsUsed(nextAttempts);
 
+    // Only save to database if not in unlimited mode
+    if (!isUnlimited) {
+      await createGuess(guessName);
+    }
     // Persist the guess on the server
     await createGuess(guessName);
 
@@ -116,6 +134,11 @@ export default function GameClient({
         setOpen(true);
       }, 500);
 
+      // Only save to database if not in unlimited mode
+      if (!isUnlimited) {
+        await endGame(true);
+      }
+
       // Persist the win result on the server
       await endGame(true);
       return;
@@ -128,6 +151,10 @@ export default function GameClient({
         setOpen(true);
       }, 500);
 
+      // Only save to database if not in unlimited mode
+      if (!isUnlimited) {
+        await endGame(false);
+      }
       // Persist the loss on the server
       await endGame(false);
     }
@@ -205,6 +232,60 @@ export default function GameClient({
                 </>
               )}
             </Dialog.Title>
+            <div className="w-full flex flex-col items-center gap-4 mt-4">
+              {stats && (
+                <div className="w-full flex flex-col gap-2 text-sm bg-white/5 rounded-xl p-4 border border-white/10">
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Wins</span>
+                    <span className="text-white font-semibold">
+                      {stats.totalWins}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Games</span>
+                    <span className="text-white font-semibold">
+                      {stats.totalGames}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Win Rate</span>
+                    <span className="text-white font-semibold">
+                      {stats.totalGames > 0
+                        ? ((stats.totalWins / stats.totalGames) * 100).toFixed(1)
+                        : 0}
+                      %
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Streak</span>
+                    <span className="text-white font-semibold">
+                      {stats.currentStreak}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Best</span>
+                    <span className="text-white font-semibold">
+                      {stats.bestStreak}
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-3 w-full justify-center">
+                <button
+                  className="mt-2 px-6 py-2 rounded-xl bg-linear-to-r cursor-pointer from-blue-500 to-rose-500 text-white font-bold shadow hover:scale-105 transition-transform"
+                  onClick={() => setOpen(false)}
+                >
+                  Close
+                </button>
+                {isUnlimited && (gameOver || won) && (
+                  <button
+                    className="mt-2 px-6 py-2 rounded-xl bg-linear-to-r cursor-pointer from-green-500 to-emerald-500 text-white font-bold shadow hover:scale-105 transition-transform"
+                    onClick={() => window.location.reload()}
+                  >
+                    Play Again
+                  </button>
+                )}
+              </div>
 
             {/* Dialog actions */}
             <div className="w-full flex flex-col items-center gap-2 mt-2">
@@ -260,6 +341,9 @@ export default function GameClient({
               </div>
             </div>
 
+            {/* IMAGE */}
+            <div className="flex flex-col justify-center items-center gap-4">
+              <div className="w-96 h-96 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] grid place-items-center">
             {/* ------------------------------ Image ---------------------------- */}
             <div className="order-1 lg:order-2 flex justify-center">
               <div className="w-full max-w-[420px] lg:w-[384px] aspect-square rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] grid place-items-center overflow-hidden">
@@ -281,8 +365,40 @@ export default function GameClient({
                   </span>
                 )}
               </div>
+              {isUnlimited && (gameOver || won) && (
+                <button
+                  className="px-6 py-2 rounded-xl bg-linear-to-r cursor-pointer from-green-500 to-emerald-500 text-white font-bold shadow hover:scale-105 transition-transform"
+                  onClick={() => window.location.reload()}
+                >
+                  Play Again
+                </button>
+              )}
             </div>
 
+            <div className="flex justify-start pl-6">
+              <div className="w-40 rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-4 flex flex-col gap-3">
+                <button
+                  onClick={() => setOpen(true)}
+                  className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2"
+                >
+                  <ChartLine/>
+                  Stats
+                </button>
+                <Link href={isUnlimited ? "/" : "/unlimited"} className="w-full">
+                  <button className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
+                    {isUnlimited ? (
+                      <>
+                        <Clock/>
+                        Daily Puzzle
+                      </>
+                    ) : (
+                      <>
+                        <Infinity/> 
+                        Unlimited
+                      </>
+                    )}
+                  </button>
+                </Link>
             {/* ------------------------------ Stats ---------------------------- */}
             <div className="order-3 lg:order-3 flex justify-center lg:justify-start">
               <div className="w-full max-w-[420px] lg:w-[220px] rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-4">
@@ -332,6 +448,20 @@ export default function GameClient({
               </div>
             </div>
           </div>
+          {/* Pokemon Name */}
+          {(won || gameOver) && pokemon?.name && (
+            <div className="rounded-full py-2.5 px-3.5 bg-black/22 border border-white/12 text-white hover:bg-black/30">
+              <div className="text-4xl font-extrabold text-yellow-300 tracking-wide drop-shadow-lg">
+                {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
+          </div>
+          </div>
+          )}
+          {/* HINTS */}
+          <Hints
+            pokemon={pokemon}
+            generation={generation}
+            revealedHints={won ? maxAttempts : attemptsUsed}
+          />
 
           {/* ------------------------------------------------------------------ */}
           {/*                                  HINTS                              */}
