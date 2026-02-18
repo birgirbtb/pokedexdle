@@ -80,12 +80,20 @@ export default async function Page() {
   return (
     <GameFrame
       headerCenter={
-        <Link href="/history">
-          <button className="border border-white/[0.14] bg-black/10 text-[#e8eefc] py-2.5 px-3.5 rounded-xl font-bold cursor-pointer">
-            History
-          </button>
-        </Link>
-      }
+        <div className="flex gap-3">
+          <Link href="/history">
+            <button className="border border-white/[0.14] bg-black/10 text-[#e8eefc] py-2.5 px-3.5 rounded-xl font-bold cursor-pointer">
+              History
+            </button>
+          </Link>
+
+    <Link href="/help">
+      <button className="border border-white/[0.14] bg-black/10 text-[#e8eefc] py-2.5 px-3.5 rounded-xl font-bold cursor-pointer">
+        Help
+      </button>
+    </Link>
+  </div>
+}
     >
       <GameClient
         pokemon={pokemon}
