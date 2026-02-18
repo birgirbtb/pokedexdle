@@ -5,6 +5,13 @@ export default function HelpPage() {
   return (
     <GameFrame>
       <div className="w-full max-w-3xl flex flex-col gap-8 text-[#e8eefc]">
+        <div className="pt-4 text-center">
+          <Link href="/">
+            <button className="px-6 py-2 rounded-xl bg-linear-to-r from-blue-500 to-rose-500 text-white font-bold shadow hover:scale-105 transition-transform">
+              Back to Game
+            </button>
+          </Link>
+        </div>
         <h1 className="text-4xl font-extrabold text-white text-center">
           How to Play
         </h1>

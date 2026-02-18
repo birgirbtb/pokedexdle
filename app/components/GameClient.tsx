@@ -10,7 +10,7 @@ import { Dialog } from "radix-ui";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { createGuess, endGame, getUserGame } from "@/lib/actions/guess";
 import type { UserStats } from "@/lib/actions/stats";
-import { ChartLine, Clock, Infinity } from 'lucide-react';
+import { ChartLine, Clock, Infinity, HelpCircle } from 'lucide-react';
 
 type Props = {
   pokemon: Pokedex.Pokemon | null;
@@ -276,6 +276,14 @@ export default function GameClient({
                         Unlimited
                       </>
                     )}
+                  </button>                
+                </Link>
+                
+                <Link href="/help">
+                  <button className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
+                    {/* Help button */}
+                    <HelpCircle size={20} />
+                    Help
                   </button>
                 </Link>
               </div>

@@ -86,13 +86,7 @@ export default async function Page() {
               History
             </button>
           </Link>
-
-    <Link href="/help">
-      <button className="border border-white/[0.14] bg-black/10 text-[#e8eefc] py-2.5 px-3.5 rounded-xl font-bold cursor-pointer">
-        Help
-      </button>
-    </Link>
-  </div>
+        </div>
 }
     >
       <GameClient
