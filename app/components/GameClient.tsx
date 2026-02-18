@@ -47,45 +47,52 @@ export default function GameClient({
   const showImage = attemptsUsed >= maxAttempts - 1 || won;
 
   async function handleGuess(guessName: string) {
-    if (gameOver || won) return;
+  if (gameOver || won) return;
 
-    setPreviousGuesses((prev) => [...prev, guessName]);
-    const nextAttempts = attemptsUsed + 1;
-    setAttemptsUsed(nextAttempts);
+  const isCorrect =
+    guessName.toLowerCase() === pokemon?.name.toLowerCase();
+
+  setPreviousGuesses((prev) => [...prev, guessName]);
+
+  // If correct = set won FIRST
+  if (isCorrect) {
+    setWon(true);
+  }
+
+  const nextAttempts = attemptsUsed + 1;
+  setAttemptsUsed(nextAttempts);
+
+  // Only save to database if not in unlimited mode
+  if (!isUnlimited) {
+    await createGuess(guessName);
+  }
+
+  if (isCorrect) {
+    // User guessed correctly
+    setTimeout(() => {
+      setOpen(true);
+    }, 500);
 
     // Only save to database if not in unlimited mode
     if (!isUnlimited) {
-      await createGuess(guessName);
+      await endGame(true);
     }
 
-    if (guessName.toLowerCase() === pokemon?.name.toLowerCase()) {
-      // User guessed correctly
-      setWon(true);
+    return;
+  }
 
-      setTimeout(() => {
-        setOpen(true);
-      }, 500);
+  if (nextAttempts >= maxAttempts) {
+    // Game over, reveal correct answer
+    setTimeout(() => {
+      setOpen(true);
+    }, 500);
 
-      // Only save to database if not in unlimited mode
-      if (!isUnlimited) {
-        await endGame(true);
-      }
-
-      return;
-    }
-
-    if (nextAttempts >= maxAttempts) {
-      // Game over, reveal correct answer
-      setTimeout(() => {
-        setOpen(true);
-      }, 500);
-
-      // Only save to database if not in unlimited mode
-      if (!isUnlimited) {
-        await endGame(false);
-      }
+    // Only save to database if not in unlimited mode
+    if (!isUnlimited) {
+      await endGame(false);
     }
   }
+}
 
   function handleAutoWin() {
     if (gameOver || won) return;
