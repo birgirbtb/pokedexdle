@@ -12,7 +12,7 @@
   - signup: creates a new Supabase Auth user and inserts a profile row
 
   Inputs:
-  - state: FormState (used by useActionState on the client)
+  - state: FormState (used by useActionState on the client) (we don't use this on the server, but it must be included in the function signature to receive form data)
   - formData: the submitted form fields
 
   Outputs:
@@ -205,7 +205,7 @@ export async function signup(state: FormState, formData: FormData) {
     console.log(profileError);
 
     // If profile insertion fails, return a "username taken" type error message
-    // NOTE: This assumes your DB enforces unique usernames
+    // NOTE: The DB enforces unique usernames with SQL
     if (profileError)
       return {
         errors: {

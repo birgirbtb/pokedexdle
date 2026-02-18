@@ -30,7 +30,7 @@ import Link from "next/link"; // Next.js client navigation
 export default function SignUp() {
   /* ---------------------------- Form Action State -------------------------- */
   // useActionState returns:
-  // - state: whatever your server action returns (commonly success/errors)
+  // - state: any errors (if applicable) returned by the server action, or undefined if not run yet
   // - action: the function you put on the <form action={...}>
   // - pending: true while the server action is running (form submitting)
   const [state, action, pending] = useActionState(signup, undefined);
@@ -52,7 +52,7 @@ export default function SignUp() {
     /* ----------------------------- Outer Card ------------------------------ */
     // Glassmorphism container:
     // - max-w-xl keeps the signup form from getting too wide on desktop
-    // - rounded border + blur + gradient matches your site style
+    // - rounded border + blur + gradient matches the site style
     <div className="relative w-full max-w-xl rounded-[18px] overflow-hidden bg-linear-to-b from-white/6 to-white/3 border border-white/10 shadow-[0_22px_55px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
       {/* ------------------------------ Header ------------------------------ */}
       <header className="border-b border-white/10">
@@ -81,7 +81,7 @@ export default function SignUp() {
             </label>
 
             {/* Input:
-                - name must match what your server action expects (email)
+                - name must match what the server action expects (email)
                 - type="email" enables basic email keyboard/autofill on mobile
             */}
             <Input
@@ -112,7 +112,7 @@ export default function SignUp() {
             </label>
 
             {/* Input:
-                - name must match what your server action expects (username)
+                - name must match what the server action expects (username)
             */}
             <Input
               id="username"
@@ -142,7 +142,7 @@ export default function SignUp() {
             </label>
 
             {/* Input:
-                - name must match what your server action expects (password)
+                - name must match what the server action expects (password)
                 - type="password" hides characters
             */}
             <Input
@@ -173,7 +173,7 @@ export default function SignUp() {
             </label>
 
             {/* Input:
-                - name must match what your server action expects (confirmPassword)
+                - name must match what the server action expects (confirmPassword)
                 - used to confirm user typed the intended password
             */}
             <Input

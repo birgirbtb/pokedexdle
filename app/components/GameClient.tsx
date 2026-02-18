@@ -351,51 +351,13 @@ export default function GameClient({
             {/* ------------------------------ Stats ---------------------------- */}
             <div className="order-3 lg:order-3 flex justify-center lg:justify-start">
               <div className="w-full max-w-[420px] lg:w-[220px] rounded-2xl border border-white/10 bg-linear-to-b from-[rgba(17,28,51,0.92)] to-[rgba(15,23,42,0.92)] p-4">
-                <div className="text-white font-medium mb-2">Your Stats</div>
-
-                {stats ? (
-                  <div className="grid grid-cols-2 gap-2 text-sm lg:flex lg:flex-col lg:gap-2">
-                    <div className="flex items-center justify-between text-[#9aa6c3]">
-                      <span>Wins</span>
-                      <span className="text-white font-semibold">
-                        {stats.totalWins}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[#9aa6c3]">
-                      <span>Games</span>
-                      <span className="text-white font-semibold">
-                        {stats.totalGames}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[#9aa6c3]">
-                      <span>Streak</span>
-                      <span className="text-white font-semibold">
-                        {stats.currentStreak}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[#9aa6c3]">
-                      <span>Best</span>
-                      <span className="text-white font-semibold">
-                        {stats.bestStreak}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-[#9aa6c3] text-sm">
-                    Login to track stats
-                  </div>
-                )}
-
                 {/* Buttons section (only shows if desired) */}
-                <div className="mt-4 flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
                   {/* Opens the dialog to view the summary again */}
                   <button
                     type="button"
                     onClick={() => setOpen(true)}
-                    className="w-full min-h-[44px] px-3 py-2 rounded-xl text-white font-bold hover:bg-white/10 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2 border border-white/10 bg-white/5"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl text-white font-bold hover:bg-white/10 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2"
                   >
                     <ChartLine size={18} />
                     Stats
@@ -408,7 +370,7 @@ export default function GameClient({
                   >
                     <button
                       type="button"
-                      className="w-full min-h-[44px] px-3 py-2 rounded-xl text-white font-bold hover:bg-white/10 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2 border border-white/10 bg-white/5"
+                      className="w-full min-h-[44px] px-3 py-2 rounded-xl text-white font-bold hover:bg-white/10 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2"
                     >
                       {isUnlimited ? (
                         <>

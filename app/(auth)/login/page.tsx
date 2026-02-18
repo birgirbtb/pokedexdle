@@ -28,7 +28,7 @@ import Link from "next/link"; // Next.js client navigation
 export default function Login() {
   /* ---------------------------- Form Action State -------------------------- */
   // useActionState returns:
-  // - state: whatever your server action returns (commonly success/errors)
+  // - state: any errors (if applicable) returned by the server action, or undefined if not run yet
   // - action: the function you put on the <form action={...}>
   // - pending: true while the server action is running (form submitting)
   const [state, action, pending] = useActionState(login, undefined);
@@ -50,7 +50,7 @@ export default function Login() {
     /* ----------------------------- Outer Card ------------------------------ */
     // Glassmorphism container:
     // - max-w-xl keeps the login form from getting too wide on desktop
-    // - rounded border + blur + gradient matches your site style
+    // - rounded border + blur + gradient matches the site style
     <div className="relative w-full max-w-xl rounded-[18px] overflow-hidden bg-linear-to-b from-white/6 to-white/3 border border-white/10 shadow-[0_22px_55px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
       {/* ------------------------------ Header ------------------------------ */}
       <header className="border-b border-white/10">
@@ -79,7 +79,7 @@ export default function Login() {
             </label>
 
             {/* Input:
-                - name must match what your server action expects (emailusername)
+                - name must match what the server action expects (emailusername)
                 - id matches label htmlFor for accessibility
             */}
             <Input
@@ -109,7 +109,7 @@ export default function Login() {
               Password
             </label>
             {/* Input:
-                - name must match what your server action expects (password)
+                - name must match what the server action expects (password)
                 - type password hides characters
             */}
             <Input

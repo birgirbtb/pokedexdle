@@ -11,7 +11,7 @@
 //   - guesses: nested relation providing each attempt for that day
 //
 // UI wrappers:
-// - GameFrame: your shared app layout (header + glass container)
+// - GameFrame: the shared app layout (header + glass container)
 // - Link: Next.js navigation for "Back to Game" and "Login"
 // -----------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ import GameFrame from "../components/GameFrame"; // Shared app shell layout
 import { createClient } from "@/lib/supabase/server"; // Server-side Supabase client
 
 // Max number of guesses/attempt slots shown per day.
-// IMPORTANT: This should match your game rules and database logic.
+// IMPORTANT: This should match the game rules and database logic.
 const MAX_ATTEMPTS = 6;
 
 /* ---------------------------- Database Row Types --------------------------- */
@@ -196,7 +196,6 @@ export default async function HistoryPage() {
         {/* Panel for logged-out messaging */}
         <div className="rounded-2xl border border-white/10 bg-black/20 shadow-[0_10px_26px_rgba(0,0,0,0.35)] p-5 text-center text-[#9aa6c3]">
           Log in to view your history.
-
           {/* Login call-to-action */}
           <div className="mt-4">
             <Link href="/login">

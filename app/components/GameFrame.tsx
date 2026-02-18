@@ -10,7 +10,7 @@
 
 import type { ReactNode } from "react"; // React type used for children + optional header content
 import Link from "next/link"; // Next.js client-side navigation
-import LogOut from "../(auth)/components/LogOut"; // Your logout button/component (used when user is logged in)
+import LogOut from "../(auth)/components/LogOut"; // The logout button/component (used when user is logged in)
 import { createClient } from "@/lib/supabase/server"; // Server-side Supabase client (reads cookies/session)
 
 // Props accepted by the frame:
