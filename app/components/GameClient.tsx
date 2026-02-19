@@ -279,13 +279,6 @@ export default function GameClient({
                   </button>                
                 </Link>
                 
-                <Link href="/help">
-                  <button className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
-                    {/* Help button */}
-                    <HelpCircle size={20} />
-                    Help
-                  </button>
-                </Link>
               </div>
             </div>
           </div>
