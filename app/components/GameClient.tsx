@@ -29,7 +29,7 @@ import * as Dialog from "@radix-ui/react-dialog"; // ✅ Correct Radix Dialog im
 import { Cross2Icon } from "@radix-ui/react-icons"; // Dialog close icon
 import { createGuess, endGame, getUserGame } from "@/lib/actions/guess"; // Server actions
 import type { UserStats } from "@/lib/actions/stats"; // Stats type
-import { ChartLine, Clock, Infinity } from "lucide-react"; // Icons
+import { ChartLine, Clock, Infinity, HelpCircle } from "lucide-react"; // Icons
 
 /* ------------------------------- Prop Types -------------------------------- */
 
@@ -383,6 +383,14 @@ export default function GameClient({
                           Unlimited
                         </>
                       )}
+                    </button>
+                  </Link>
+
+                  {/* Help button */}
+                  <Link href="/help">
+                    <button className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
+                      <HelpCircle size={20} />
+                        Help
                     </button>
                   </Link>
                 </div>
