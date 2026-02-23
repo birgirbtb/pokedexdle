@@ -517,12 +517,6 @@ export default function GameClient({
           {/* ------------------------------------------------------------------ */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-[760px]">
-              {/* Already played today message for unsigned users */}
-              {!isSignedIn && alreadyPlayedToday && (
-                <div className="mb-4 text-center text-[#9aa6c3] bg-white/5 border border-white/10 rounded-xl p-3">
-                  You've already played today! Come back tomorrow for the next puzzle.
-                </div>
-              )}
               <SearchPokemon
                 maxAttempts={maxAttempts}
                 attemptsUsed={attemptsUsed}
