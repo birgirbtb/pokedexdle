@@ -36,30 +36,44 @@ const P = new Pokedex();
   Fetches evolution chain for a Pokémon and determines
   which stage it belongs to (1, 2, 3, etc).
 */
-async function getEvolutionStage(pokemonName: string) {
+async function getEvolutionStage(
+  pokemonName: string,
+  speciesData?: { evolution_chain: { url: string } },
+) {
   // Fetch species data
-  const speciesRes = await fetch(
-    `https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`,
-  );
-  const species = await speciesRes.json();
+  const species = speciesData ?? (await P.getPokemonSpeciesByName(pokemonName));
 
   // Fetch evolution chain
-  const evoRes = await fetch(species.evolution_chain.url);
-  const evoChain = await evoRes.json();
+  const evolutionChainId = species.evolution_chain.url
+    .split("/")
+    .filter(Boolean)
+    .pop();
 
-  // Traverse evolution chain
-  let stage = 1;
-  let current = evoChain.chain;
+  if (!evolutionChainId) {
+    return 1;
+  }
 
-  while (current) {
-    // If current matches Pokémon, return its stage
-    if (current.species.name === pokemonName) {
-      return stage;
+  const evoChain = await P.getEvolutionChainById(Number(evolutionChainId));
+
+  // Traverse full evolution tree (supports branched chains)
+  const queue = [{ node: evoChain.chain, stage: 1 }];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+
+    if (!current) {
+      continue;
     }
 
-    // Move to next evolution
-    current = current.evolves_to?.[0];
-    stage++;
+    // If current matches Pokémon, return its stage
+    if (current.node.species.name === pokemonName) {
+      return current.stage;
+    }
+
+    // Enqueue all next evolutions (not just first branch)
+    for (const nextEvolution of current.node.evolves_to ?? []) {
+      queue.push({ node: nextEvolution, stage: current.stage + 1 });
+    }
   }
 
   // Default fallback
@@ -132,7 +146,7 @@ export default async function Page() {
     pokemon = await P.getPokemonByName(correctPokemon);
 
     // Determine evolution stage
-    const evolutionStage = await getEvolutionStage(correctPokemon);
+    const evolutionStage = await getEvolutionStage(correctPokemon, speciesData);
     pokemon.evolutionStage = evolutionStage;
   } catch (error) {
     console.error("Error fetching pokemon:", error);
@@ -181,12 +195,12 @@ export default async function Page() {
     >
       {/* Main interactive game component */}
       <GameClient
-        pokemon={pokemon}                     // Pokémon full data
-        generation={generation}               // Generation string
-        game={game}                           // User's game for today
+        pokemon={pokemon} // Pokémon full data
+        generation={generation} // Generation string
+        game={game} // User's game for today
         nextGuessAt={nextGuessAt.toISOString()} // Cooldown target
-        stats={stats}                         // User statistics
-        isAdmin={isAdmin}                     // Admin flag
+        stats={stats} // User statistics
+        isAdmin={isAdmin} // Admin flag
       />
     </GameFrame>
   );
