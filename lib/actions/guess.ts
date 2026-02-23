@@ -157,24 +157,19 @@ export async function createGame() {
 /*                                createGuess                                 */
 /* -------------------------------------------------------------------------- */
 /*
-  Inserts a new guess row for the current user's game.
+  Internal helper: Inserts a new guess row for the current user's game.
   Attempt number is computed as (existing guesses length + 1).
 
   Inputs:
   - guessName: the Pokémon name guessed by the user
+  - game: the game object
 
   Returns:
   - void (no explicit return value)
 */
-export async function createGuess(guessName: string) {
+async function createGuess(guessName: string, game: { id: string; user_id: string; guesses: unknown[] }) {
   // Create server Supabase client
   const supabase = await createClient();
-
-  // Ensure the user has a game row for today (or create one)
-  const game = await getOrCreateGame();
-
-  // If no game exists (commonly not logged in), stop
-  if (!game) return;
 
   try {
     // Insert a guess row into guesses table
@@ -184,14 +179,85 @@ export async function createGuess(guessName: string) {
       guess_name: guessName, // Store guess name
       attempt_number: game.guesses.length + 1, // Next attempt number
     });
-
-    // Placeholder note:
-    // Game correctness is handled elsewhere (GameClient compares guess to pokemon)
-    // TODO: you could also validate correctness here server-side if desired
   } catch (error) {
     // Log server error for debugging
     console.error("Error submitting guess:", error);
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                submitGuess                                 */
+/* -------------------------------------------------------------------------- */
+/*
+  Unified guessing action that handles the entire guess submission process.
+
+  This combines:
+  - Guess validation against the correct Pokémon
+  - Saving the guess to database (if not unlimited)
+  - Checking if the game should end
+  - Ending the game if necessary (if not unlimited)
+
+  Inputs:
+  - guessName: the Pokémon name guessed by the user
+  - correctPokemonName: the correct Pokémon name to check against
+  - isUnlimited: whether this is unlimited mode (skip DB operations)
+
+  Returns:
+  - Object with game state:
+    {
+      isCorrect: boolean,
+      gameOver: boolean,
+      attemptsUsed: number,
+      won: boolean
+    }
+*/
+export async function submitGuess(guessName: string, correctPokemonName: string, isUnlimited: boolean = false) {
+  // Check if guess is correct
+  const isCorrect = guessName.toLowerCase() === correctPokemonName.toLowerCase();
+
+  // If unlimited mode, skip database operations
+  if (isUnlimited) {
+    return {
+      isCorrect,
+      gameOver: false, // Unlimited mode never ends
+      attemptsUsed: 0, // Not tracked in unlimited - handled by client
+      won: isCorrect
+    };
+  }
+
+  // Get or create game for daily mode
+  const game = await getOrCreateGame();
+  if (!game) {
+    // User not logged in or game creation failed - skip database operations
+    // Return special value to indicate local tracking should be used
+    return {
+      isCorrect,
+      gameOver: false, // Continue playing
+      attemptsUsed: -1, // Special value: use local tracking
+      won: isCorrect
+    };
+  }
+
+  // Save the guess
+  await createGuess(guessName, game);
+
+  // Calculate new state
+  const attemptsUsed = game.guesses.length + 1;
+  const maxAttempts = 6;
+  const gameOver = attemptsUsed >= maxAttempts && !isCorrect;
+  const won = isCorrect;
+
+  // End game if it's over
+  if (won || gameOver) {
+    await endGame(won);
+  }
+
+  return {
+    isCorrect,
+    gameOver,
+    attemptsUsed,
+    won
+  };
 }
 
 /* -------------------------------------------------------------------------- */

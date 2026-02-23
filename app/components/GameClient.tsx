@@ -27,7 +27,7 @@ import Hints from "./Hints"; // Hints UI
 import Pokedex from "pokedex-promise-v2"; // Types
 import * as Dialog from "@radix-ui/react-dialog"; // ✅ Correct Radix Dialog import
 import { Cross2Icon } from "@radix-ui/react-icons"; // Dialog close icon
-import { createGuess, endGame, getUserGame } from "@/lib/actions/guess"; // Server actions
+import { getUserGame } from "@/lib/actions/guess"; // Server actions
 import type { UserStats } from "@/lib/actions/stats"; // Stats type
 import { ChartLine, Clock, Infinity, HelpCircle } from "lucide-react"; // Icons
 
@@ -85,50 +85,62 @@ export default function GameClient({
 
   /* ------------------------------ Handlers --------------------------------- */
 
-  // Submit a guess from SearchPokemon
-  async function handleGuess(guessName: string) {
-    if (gameOver || won) return;
+  // Handle guess result from SearchPokemon
+  async function handleGuessResult(guessName: string, result: {
+    isCorrect: boolean;
+    gameOver: boolean;
+    attemptsUsed: number;
+    won: boolean;
+  }) {
+    const { isCorrect, gameOver: isGameOver, attemptsUsed: newAttemptsUsed, won: hasWon } = result;
 
-    const isCorrect = guessName.toLowerCase() === pokemon?.name.toLowerCase();
-
+    // Update local state
     setPreviousGuesses((prev) => [...prev, guessName]);
 
-    // If correct = set won FIRST
-    if (isCorrect) {
-      setWon(true);
-    }
+    // For unlimited mode, track attempts locally
+    if (isUnlimited) {
+      const nextAttempts = attemptsUsed + 1;
+      setAttemptsUsed(nextAttempts);
 
-    const nextAttempts = attemptsUsed + 1;
-    setAttemptsUsed(nextAttempts);
-
-    // Only save to database if not in unlimited mode
-    if (!isUnlimited) {
-      await createGuess(guessName);
-    }
-
-    if (isCorrect) {
-      // User guessed correctly
-      setTimeout(() => {
-        setOpen(true);
-      }, 500);
-
-      // Save guess only in daily mode
-      if (!isUnlimited) {
-        await endGame(true);
+      // Check if game should end in unlimited mode
+      if (isCorrect) {
+        setWon(true);
+        setTimeout(() => {
+          setOpen(true);
+        }, 500);
+      } else if (nextAttempts >= maxAttempts) {
+        setTimeout(() => {
+          setOpen(true);
+        }, 500);
       }
+    } else {
+      // For daily mode
+      if (newAttemptsUsed === -1) {
+        // Special value: user not logged in, track locally
+        const nextAttempts = attemptsUsed + 1;
+        setAttemptsUsed(nextAttempts);
 
-      return;
-    }
+        if (isCorrect) {
+          setWon(true);
+          setTimeout(() => {
+            setOpen(true);
+          }, 500);
+        } else if (nextAttempts >= maxAttempts) {
+          setTimeout(() => {
+            setOpen(true);
+          }, 500);
+        }
+      } else {
+        // User is logged in, use server-provided values
+        setWon(hasWon);
+        setAttemptsUsed(newAttemptsUsed);
 
-    if (nextAttempts >= maxAttempts) {
-      // Game over, reveal correct answer
-      setTimeout(() => {
-        setOpen(true);
-      }, 500);
-
-      // Only save to database if not in unlimited mode
-      if (!isUnlimited) {
-        await endGame(false);
+        // Show dialog if game ended
+        if (hasWon || isGameOver) {
+          setTimeout(() => {
+            setOpen(true);
+          }, 500);
+        }
       }
     }
   }
@@ -444,8 +456,10 @@ export default function GameClient({
                 attemptsUsed={attemptsUsed}
                 disabled={gameOver || won}
                 nextGuessAt={nextGuessAt}
-                onGuess={handleGuess}
+                onGuessResult={handleGuessResult}
                 won={won}
+                isUnlimited={isUnlimited}
+                correctPokemonName={pokemon?.name || ""}
               />
             </div>
           </div>
