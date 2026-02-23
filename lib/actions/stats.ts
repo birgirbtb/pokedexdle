@@ -15,6 +15,9 @@
   Tables used (Supabase):
   - games (won, daily_pokemon_id)
   - daily_pokemon (available_on) joined via daily_pokemon_id
+
+  For unsigned users:
+  - Stats are calculated from localStorage directly on the client
 */
 
 import { createClient } from "@/lib/supabase/server"; // Server Supabase client (session/cookies aware)

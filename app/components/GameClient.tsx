@@ -19,7 +19,7 @@
   - Unlimited mode controls
 */
 
-import { useState } from "react"; // React state
+import { useState, useEffect } from "react"; // React state
 import Link from "next/link"; // Next navigation
 import Image from "next/image"; // Next optimized images
 import SearchPokemon from "./SearchPokemon"; // Search UI
@@ -28,7 +28,10 @@ import Pokedex from "pokedex-promise-v2"; // Types
 import * as Dialog from "@radix-ui/react-dialog"; // ✅ Correct Radix Dialog import
 import { Cross2Icon } from "@radix-ui/react-icons"; // Dialog close icon
 import { createGuess, endGame, getUserGame } from "@/lib/actions/guess"; // Server actions
+import { submitGuess, submitEndGame, initializeGame, isTodaysGameFinished } from "@/lib/gameSubmission"; // Game submission utilities
+import { getUserStats } from "@/lib/actions/stats"; // Fetch updated stats
 import type { UserStats } from "@/lib/actions/stats"; // Stats type
+import { getUnsignedUserStats, getTodaysGameRecord } from "@/lib/cookieStats"; // Unsigned user stats
 import { ChartLine, Clock, Infinity, HelpCircle } from "lucide-react"; // Icons
 
 /* ------------------------------- Prop Types -------------------------------- */
@@ -58,6 +61,9 @@ export default function GameClient({
 }: Props) {
   /* -------------------------------- State --------------------------------- */
 
+  // Determine if user is signed in (if game or stats exist, user is signed in)
+  const isSignedIn = !!game || stats !== null;
+
   // Attempts already used (load from server game if exists)
   const [attemptsUsed, setAttemptsUsed] = useState(game?.guesses.length || 0);
 
@@ -75,6 +81,52 @@ export default function GameClient({
   // Dialog open/close state
   const [open, setOpen] = useState(false);
 
+  // Current stats (controlled state for both signed-in and unsigned users)
+  const [currentStats, setCurrentStats] = useState<UserStats | null>(stats || null);
+
+  // Stats for unsigned users (loaded from localStorage)
+  const [unsignedStats, setUnsignedStats] = useState<ReturnType<typeof getUnsignedUserStats> | null>(null);
+
+  // Track if user already played today (for unsigned users)
+  const [alreadyPlayedToday, setAlreadyPlayedToday] = useState(false);
+
+  /* ----------------------- Initialize Unsigned User Game -------------------- */
+
+  useEffect(() => {
+    // Initialize game record and load stats for unsigned users
+    if (!isSignedIn && pokemon) {
+      initializeGame(isSignedIn, pokemon.name);
+      const stats = getUnsignedUserStats();
+      setUnsignedStats(stats);
+      setCurrentStats(stats as unknown as UserStats);
+
+      // Check if the user already played today
+      if (isTodaysGameFinished(isSignedIn)) {
+        setAlreadyPlayedToday(true);
+        
+        // Load the previous game's state
+        const todaysGame = getTodaysGameRecord();
+        if (todaysGame) {
+          setAttemptsUsed(todaysGame.guesses);
+          setWon(todaysGame.won);
+          // Fill in previous guesses (we don't have them stored, so we'll show empty)
+          // This is acceptable since we show the result anyway
+        }
+      }
+    }
+  }, [isSignedIn, pokemon]);
+
+  /* ----------------------- Update Unsigned User Stats ----------------------- */
+
+  useEffect(() => {
+    // Update unsigned user stats when the game state changes
+    if (!isSignedIn) {
+      const stats = getUnsignedUserStats();
+      setUnsignedStats(stats);
+      setCurrentStats(stats as unknown as UserStats);
+    }
+  }, [won, attemptsUsed, isSignedIn]);
+
   /* ---------------------------- Derived Values ----------------------------- */
 
   // Game is over if out of attempts and not won
@@ -87,6 +139,9 @@ export default function GameClient({
 
   // Submit a guess from SearchPokemon
   async function handleGuess(guessName: string) {
+    // Prevent replaying if unsigned user already played today
+    if (!isSignedIn && alreadyPlayedToday) return;
+    
     if (gameOver || won) return;
 
     const isCorrect = guessName.toLowerCase() === pokemon?.name.toLowerCase();
@@ -103,7 +158,7 @@ export default function GameClient({
 
     // Only save to database if not in unlimited mode
     if (!isUnlimited) {
-      await createGuess(guessName);
+      await submitGuess(guessName, isSignedIn);
     }
 
     if (isCorrect) {
@@ -114,7 +169,17 @@ export default function GameClient({
 
       // Save guess only in daily mode
       if (!isUnlimited) {
-        await endGame(true);
+        await submitEndGame(true, isSignedIn, pokemon?.name || "");
+        // Update stats immediately after saving
+        if (!isSignedIn) {
+          const stats = getUnsignedUserStats();
+          setUnsignedStats(stats);
+          setCurrentStats(stats as unknown as UserStats);
+        } else {
+          // Refetch stats for signed-in users
+          const updatedStats = await getUserStats();
+          setCurrentStats(updatedStats);
+        }
       }
 
       return;
@@ -128,7 +193,17 @@ export default function GameClient({
 
       // Only save to database if not in unlimited mode
       if (!isUnlimited) {
-        await endGame(false);
+        await submitEndGame(false, isSignedIn, pokemon?.name || "");
+        // Update stats immediately after saving
+        if (!isSignedIn) {
+          const stats = getUnsignedUserStats();
+          setUnsignedStats(stats);
+          setCurrentStats(stats as unknown as UserStats);
+        } else {
+          // Refetch stats for signed-in users
+          const updatedStats = await getUserStats();
+          setCurrentStats(updatedStats);
+        }
       }
     }
   }
@@ -204,47 +279,50 @@ export default function GameClient({
             </Dialog.Title>
 
             {/* Stats summary inside dialog (optional) */}
-            {stats && (
-              <div className="w-full flex flex-col gap-2 text-sm bg-white/5 rounded-xl p-4 border border-white/10">
-                <div className="flex items-center justify-between text-[#9aa6c3]">
-                  <span>Wins</span>
-                  <span className="text-white font-semibold">
-                    {stats.totalWins}
-                  </span>
-                </div>
+            {(() => {
+              const statsToDisplay = currentStats || unsignedStats;
+              return statsToDisplay ? (
+                <div className="w-full flex flex-col gap-2 text-sm bg-white/5 rounded-xl p-4 border border-white/10">
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Wins</span>
+                    <span className="text-white font-semibold">
+                      {statsToDisplay.totalWins}
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#9aa6c3]">
-                  <span>Games</span>
-                  <span className="text-white font-semibold">
-                    {stats.totalGames}
-                  </span>
-                </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Games</span>
+                    <span className="text-white font-semibold">
+                      {statsToDisplay.totalGames}
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#9aa6c3]">
-                  <span>Win Rate</span>
-                  <span className="text-white font-semibold">
-                    {stats.totalGames > 0
-                      ? ((stats.totalWins / stats.totalGames) * 100).toFixed(1)
-                      : "0.0"}
-                    %
-                  </span>
-                </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Win Rate</span>
+                    <span className="text-white font-semibold">
+                      {statsToDisplay.totalGames > 0
+                        ? ((statsToDisplay.totalWins / statsToDisplay.totalGames) * 100).toFixed(1)
+                        : "0.0"}
+                      %
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#9aa6c3]">
-                  <span>Streak</span>
-                  <span className="text-white font-semibold">
-                    {stats.currentStreak}
-                  </span>
-                </div>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Streak</span>
+                    <span className="text-white font-semibold">
+                      {statsToDisplay.currentStreak}
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#9aa6c3]">
-                  <span>Best</span>
-                  <span className="text-white font-semibold">
-                    {stats.bestStreak}
-                  </span>
+                  <div className="flex items-center justify-between text-[#9aa6c3]">
+                    <span>Best</span>
+                    <span className="text-white font-semibold">
+                      {statsToDisplay.bestStreak}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : null;
+            })()}
 
             {/* Actions */}
             <div className="flex gap-3 w-full justify-center">
@@ -439,10 +517,16 @@ export default function GameClient({
           {/* ------------------------------------------------------------------ */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-[760px]">
+              {/* Already played today message for unsigned users */}
+              {!isSignedIn && alreadyPlayedToday && (
+                <div className="mb-4 text-center text-[#9aa6c3] bg-white/5 border border-white/10 rounded-xl p-3">
+                  You've already played today! Come back tomorrow for the next puzzle.
+                </div>
+              )}
               <SearchPokemon
                 maxAttempts={maxAttempts}
                 attemptsUsed={attemptsUsed}
-                disabled={gameOver || won}
+                disabled={gameOver || won || (alreadyPlayedToday && !isSignedIn)}
                 nextGuessAt={nextGuessAt}
                 onGuess={handleGuess}
                 won={won}
