@@ -16,37 +16,65 @@
     - Link button to Login
 
   It uses:
-  - useActionState(signup, initialState) to run the server action `signup`
-  - `pending` to disable buttons and avoid flashing errors while submitting
-  - `state?.errors` to show field-specific validation errors from the server action
+  - react-hook-form to manage form state and validation
+  - Zod to define a validation schema for the form data
+  - zodResolver to connect Zod validation with react-hook-form
+  - the signup server action to handle form submission and return field-specific errors
 */
 
 import Input from "../components/Input"; // Custom styled input component
 import Button from "../components/Button"; // Custom styled button component
-import { useActionState, useState, useEffectEvent, useEffect } from "react"; // React hook for Server Actions (form actions) with state tracking
-import { signup } from "@/lib/actions/auth"; // Server action that performs signup + returns validation state
 import Link from "next/link"; // Next.js client navigation
+import { signup } from "@/lib/actions/auth"; // Server action for signing up
+import { useForm } from "react-hook-form"; // Form handling library
+import * as z from "zod"; // Zod for schema validation
+import { zodResolver } from "@hookform/resolvers/zod"; // Connects Zod with react-hook-form
+import { SignupFormSchema } from "@/lib/schemas"; // Zod schema for validating the signup form data
 
 export default function SignUp() {
-  /* ---------------------------- Form Action State -------------------------- */
-  // useActionState returns:
-  // - state: any errors (if applicable) returned by the server action, or undefined if not run yet
-  // - action: the function you put on the <form action={...}>
-  // - pending: true while the server action is running (form submitting)
-  const [state, action, pending] = useActionState(signup, undefined);
-  const [errors, setErrors] = useState(state?.errors);
-
-  const updateErrors = useEffectEvent((state: typeof errors) => {
-    setErrors(state);
+  // Initialize the form with react-hook-form and Zod validation
+  const form = useForm<z.infer<typeof SignupFormSchema>>({
+    resolver: zodResolver(SignupFormSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
-  useEffect(() => {
-    if (state) {
-      updateErrors(state.errors);
-    }
-  }, [state]);
+  // onSubmit is called when the form is submitted and validation passes
+  const onSubmit = async (data: z.infer<typeof SignupFormSchema>) => {
+    try {
+      // Call the signup server action with the form data
+      const response = await signup(data);
 
-  const clearErrors = () => setErrors(undefined);
+      // If there are field-specific errors returned by the server action, set them in the form state
+      if (response.errors.username) {
+        form.setError("username", {
+          message: response.errors.username.join(", "),
+        });
+      }
+
+      if (response.errors.email) {
+        form.setError("email", {
+          message: response.errors.email.join(", "),
+        });
+      }
+      if (response.errors.password) {
+        form.setError("password", {
+          message: response.errors.password.join(", "),
+        });
+      }
+      if (response.errors.confirmPassword) {
+        form.setError("confirmPassword", {
+          message: response.errors.confirmPassword.join(", "),
+        });
+      }
+    } catch (error) {
+      // We leave this empty because the server action should handle all errors and return them in the response.
+    }
+  };
 
   return (
     /* ----------------------------- Outer Card ------------------------------ */
@@ -66,10 +94,10 @@ export default function SignUp() {
       <section className="p-4.5">
         {/* 
           Form:
-          - action={action} wires this form to the server action returned by useActionState
+          - onSubmit is handled by react-hook-form's handleSubmit which runs validation and then calls our onSubmit function
           - space-y-4 adds vertical spacing between sections
         */}
-        <form className="space-y-4" action={action}>
+        <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           {/* ----------------------------- Email ----------------------------- */}
           <div className="space-y-2">
             {/* Label */}
@@ -83,21 +111,23 @@ export default function SignUp() {
             {/* Input:
                 - name must match what the server action expects (email)
                 - type="email" enables basic email keyboard/autofill on mobile
+                - {...form.register("email")} connects this input to react-hook-form
             */}
             <Input
               id="email"
-              name="email"
               type="email"
               placeholder="yourname@gmail.com"
-              onChange={clearErrors}
+              {...form.register("email")}
             />
 
             {/* Validation error:
                 - Only show errors when NOT pending (prevents flashing while submitting)
-                - Reads field-specific error from state.errors.email
+                - Reads field-specific error from formState.errors.email
             */}
-            {!pending && errors?.email && (
-              <p className="text-sm text-red-600">{errors.email}</p>
+            {!form.formState.isSubmitting && form.formState.errors.email && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.email.message}
+              </p>
             )}
           </div>
 
@@ -113,21 +143,24 @@ export default function SignUp() {
 
             {/* Input:
                 - name must match what the server action expects (username)
+                - type="text" is a standard text input
+                - {...form.register("username")} connects this input to react-hook-form
             */}
             <Input
               id="username"
-              name="username"
               type="text"
               placeholder="yourname"
-              onChange={clearErrors}
+              {...form.register("username")}
             />
 
             {/* Validation error:
-                - Only show errors when NOT pending
-                - Reads field-specific error from state.errors.username
+                - Only show errors when NOT pending (prevents flashing while submitting)
+                - Reads field-specific error from formState.errors.username
             */}
-            {!pending && errors?.username && (
-              <p className="text-sm text-red-600">{errors.username}</p>
+            {!form.formState.isSubmitting && form.formState.errors.username && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.username.message}
+              </p>
             )}
           </div>
 
@@ -144,21 +177,23 @@ export default function SignUp() {
             {/* Input:
                 - name must match what the server action expects (password)
                 - type="password" hides characters
+                - {...form.register("password")} connects this input to react-hook-form
             */}
             <Input
               id="password"
-              name="password"
               type="password"
               placeholder="••••••••"
-              onChange={clearErrors}
+              {...form.register("password")}
             />
 
             {/* Validation error:
-                - Only show errors when NOT pending
-                - Reads field-specific error from state.errors.password
+                - Only show errors when NOT pending (prevents flashing while submitting)
+                - Reads field-specific error from formState.errors.password
             */}
-            {!pending && errors?.password && (
-              <p className="text-sm text-red-600">{errors.password}</p>
+            {!form.formState.isSubmitting && form.formState.errors.password && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.password.message}
+              </p>
             )}
           </div>
 
@@ -175,27 +210,31 @@ export default function SignUp() {
             {/* Input:
                 - name must match what the server action expects (confirmPassword)
                 - used to confirm user typed the intended password
+                - type="password" hides characters
+                - {...form.register("confirmPassword")} connects this input to react-hook-form
             */}
             <Input
               id="confirmPassword"
-              name="confirmPassword"
               type="password"
               placeholder="••••••••"
-              onChange={clearErrors}
+              {...form.register("confirmPassword")}
             />
 
             {/* Validation error:
-                - Only show errors when NOT pending
-                - Reads field-specific error from state.errors.confirmPassword
+                - Only show errors when NOT pending (prevents flashing while submitting)
+                - Reads field-specific error from formState.errors.confirmPassword
             */}
-            {!pending && errors?.confirmPassword && (
-              <p className="text-sm text-red-600">{errors.confirmPassword}</p>
-            )}
+            {!form.formState.isSubmitting &&
+              form.formState.errors.confirmPassword && (
+                <p className="text-sm text-red-600">
+                  {form.formState.errors.confirmPassword.message}
+                </p>
+              )}
           </div>
 
           {/* -------------------------- Submit Button ------------------------- */}
-          {/* Submit triggers the server action (signup) */}
-          <Button type="submit" disabled={pending}>
+          {/* Submit triggers the server action (signup) through react-hook-form's handleSubmit */}
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             Sign Up
           </Button>
 

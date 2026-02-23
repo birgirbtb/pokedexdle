@@ -12,7 +12,6 @@
   - signup: creates a new Supabase Auth user and inserts a profile row
 
   Inputs:
-  - state: FormState (used by useActionState on the client) (we don't use this on the server, but it must be included in the function signature to receive form data)
   - formData: the submitted form fields
 
   Outputs:
@@ -20,9 +19,10 @@
   - On success: redirects (does not return a value)
 */
 
-import { FormState, LoginFormSchema, SignupFormSchema } from "@/lib/schemas"; // Zod schemas + shared form state type
+import { LoginFormSchema, SignupFormSchema } from "@/lib/schemas"; // Zod schemas + shared form state type
 import { createClient } from "../supabase/server"; // Supabase server client (session/cookies aware)
 import { redirect } from "next/navigation"; // Next.js redirect helper (server-side)
+import * as z from "zod"; // Zod for schema validation
 
 /* -------------------------------------------------------------------------- */
 /*                                   login                                    */
@@ -41,13 +41,13 @@ import { redirect } from "next/navigation"; // Next.js redirect helper (server-s
   - Uses supabase.auth.signInWithPassword(...)
   - Returns a generic error message if sign-in fails
 */
-export async function login(state: FormState, formData: FormData) {
+export async function login(formData: z.infer<typeof LoginFormSchema>) {
   /* ----------------------------- Validate Form ---------------------------- */
 
   // Validate the incoming form fields using Zod schema
   const validatedFields = LoginFormSchema.safeParse({
-    emailusername: formData.get("emailusername"), // Field name from the Login form
-    password: formData.get("password"), // Field name from the Login form
+    emailusername: formData.emailusername, // Field name from the Login form
+    password: formData.password, // Field name from the Login form
   });
 
   // If validation fails, return the Zod field errors back to the client
@@ -136,15 +136,15 @@ export async function login(state: FormState, formData: FormData) {
   - supabase.auth.signUp creates the auth user
   - supabase.from("profiles").insert creates a profile row
 */
-export async function signup(state: FormState, formData: FormData) {
+export async function signup(formData: z.infer<typeof SignupFormSchema>) {
   /* ----------------------------- Validate Form ---------------------------- */
 
   // Validate the incoming form fields using Zod schema
   const validatedFields = SignupFormSchema.safeParse({
-    username: formData.get("username"), // Field name from Signup form
-    email: formData.get("email"), // Field name from Signup form
-    password: formData.get("password"), // Field name from Signup form
-    confirmPassword: formData.get("confirmPassword"), // Field name from Signup form
+    username: formData.username, // Field name from Signup form
+    email: formData.email, // Field name from Signup form
+    password: formData.password, // Field name from Signup form
+    confirmPassword: formData.confirmPassword, // Field name from Signup form
   });
 
   // If validation fails, return the Zod field errors back to the client
