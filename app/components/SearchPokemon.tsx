@@ -18,6 +18,7 @@
 
 import { useEffect, useRef, useState } from "react"; // React hooks for state, refs, and side effects
 import { searchPokemon } from "@/lib/actions/pokemon"; // Server action used to fetch Pokémon suggestions
+import { submitGuess } from "@/lib/actions/guess"; // Unified guess submission action
 
 /* ---------------------------- Data Type Shapes ---------------------------- */
 
@@ -32,10 +33,17 @@ interface Pokemon {
 interface Props {
   maxAttempts?: number;
   attemptsUsed: number;
-  onGuess: (guessName: string) => Promise<void>;
   disabled?: boolean;
   nextGuessAt?: string;
   won?: boolean;
+  isUnlimited?: boolean;
+  correctPokemonName: string;
+  onGuessResult?: (guessName: string, result: {
+    isCorrect: boolean;
+    gameOver: boolean;
+    attemptsUsed: number;
+    won: boolean;
+  }) => void;
 }
 
 /* ------------------------------ Component --------------------------------- */
@@ -43,10 +51,12 @@ interface Props {
 export default function SearchPokemon({
   maxAttempts = 6, // Default attempts count if not passed in
   attemptsUsed,
-  onGuess,
   disabled = false, // Default to enabled
   nextGuessAt,
   won = false,
+  isUnlimited = false,
+  correctPokemonName,
+  onGuessResult,
 }: Props) {
   /* ------------------------------- State ---------------------------------- */
 
@@ -181,8 +191,13 @@ export default function SearchPokemon({
     // Stop if user hasn't selected a Pokémon
     if (!selectedPokemon) return;
 
-    // Tell parent (GameClient) to handle the guess logic and server updates
-    await onGuess(selectedPokemon.name);
+    // Submit the guess using the unified action
+    const result = await submitGuess(selectedPokemon.name, correctPokemonName, isUnlimited);
+
+    // Notify parent of the result with the guess name
+    if (onGuessResult) {
+      onGuessResult(selectedPokemon.name, result);
+    }
 
     // Reset input and selection for the next guess
     setSearchInput("");
