@@ -125,7 +125,7 @@ export default function SignUp() {
                 - Reads field-specific error from formState.errors.email
             */}
             {!form.formState.isSubmitting && form.formState.errors.email && (
-              <p className="text-sm text-red-600">
+              <p className="text-xs text-red-600">
                 {form.formState.errors.email.message}
               </p>
             )}
@@ -153,12 +153,18 @@ export default function SignUp() {
               {...form.register("username")}
             />
 
+            {!form.formState.errors.username && (
+              <p className="text-xs text-white/70">
+                Only letters and numbers are allowed.
+              </p>
+            )}
+
             {/* Validation error:
                 - Only show errors when NOT pending (prevents flashing while submitting)
                 - Reads field-specific error from formState.errors.username
             */}
             {!form.formState.isSubmitting && form.formState.errors.username && (
-              <p className="text-sm text-red-600">
+              <p className="text-xs text-red-600">
                 {form.formState.errors.username.message}
               </p>
             )}
@@ -186,12 +192,19 @@ export default function SignUp() {
               {...form.register("password")}
             />
 
+            {!form.formState.errors.password && (
+              <p className="text-xs text-white/70">
+                Must be at least 6 characters and include a letter, number, and
+                special character.
+              </p>
+            )}
+
             {/* Validation error:
                 - Only show errors when NOT pending (prevents flashing while submitting)
                 - Reads field-specific error from formState.errors.password
             */}
             {!form.formState.isSubmitting && form.formState.errors.password && (
-              <p className="text-sm text-red-600">
+              <p className="text-xs text-red-600">
                 {form.formState.errors.password.message}
               </p>
             )}
@@ -226,7 +239,7 @@ export default function SignUp() {
             */}
             {!form.formState.isSubmitting &&
               form.formState.errors.confirmPassword && (
-                <p className="text-sm text-red-600">
+                <p className="text-xs text-red-600">
                   {form.formState.errors.confirmPassword.message}
                 </p>
               )}
