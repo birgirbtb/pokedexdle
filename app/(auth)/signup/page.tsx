@@ -30,6 +30,7 @@ import { useForm } from "react-hook-form"; // Form handling library
 import * as z from "zod"; // Zod for schema validation
 import { zodResolver } from "@hookform/resolvers/zod"; // Connects Zod with react-hook-form
 import { SignupFormSchema } from "@/lib/schemas"; // Zod schema for validating the signup form data
+import { ArrowLeft } from "lucide-react";
 
 export default function SignUp() {
   // Initialize the form with react-hook-form and Zod validation
@@ -83,7 +84,14 @@ export default function SignUp() {
     // - rounded border + blur + gradient matches the site style
     <div className="relative w-full max-w-xl rounded-[18px] overflow-hidden bg-linear-to-b from-white/6 to-white/3 border border-white/10 shadow-[0_22px_55px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
       {/* ------------------------------ Header ------------------------------ */}
-      <header className="border-b border-white/10">
+      <header className="relative border-b border-white/10">
+        <Link
+          href="/"
+          aria-label="Back to home"
+          className="absolute left-4 top-1/2 -translate-y-1/2 p-1 rounded-md text-white/70 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/30"
+        >
+          <ArrowLeft size={16} />
+        </Link>
         {/* Title */}
         <h1 className="text-white text-center p-4 tracking-[0.2px] text-2xl font-semibold">
           Sign Up
