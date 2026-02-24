@@ -173,6 +173,22 @@ export async function signup(formData: z.infer<typeof SignupFormSchema>) {
   // Server-side Supabase client
   const supabase = await createClient();
 
+  /* ------------------------- Check if username exists --------------------- */
+
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("username", username.toLowerCase())
+    .single();
+
+  if (existingProfile) {
+    return {
+      errors: {
+        username: ["Username is already taken."],
+      },
+    };
+  }
+
   /* ------------------------ Create Auth Account --------------------------- */
 
   // Create a Supabase Auth user
