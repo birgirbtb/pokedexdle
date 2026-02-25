@@ -25,6 +25,40 @@ import { redirect } from "next/navigation"; // Next.js redirect helper (server-s
 import * as z from "zod"; // Zod for schema validation
 
 /* -------------------------------------------------------------------------- */
+/*                           getCurrentUserWithAdmin                          */
+/* -------------------------------------------------------------------------- */
+/*
+  Helper function to get the current logged-in user along with their admin status.
+
+  Returns:
+  {
+    user: SupabaseUser | null, // The authenticated user object, or null if not logged in
+    isAdmin: boolean // True if the user has admin privileges, false otherwise
+  }
+*/
+export async function getCurrentUserWithAdmin() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let isAdmin = false;
+
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("admin")
+      .eq("id", user.id)
+      .single();
+
+    isAdmin = data?.admin || false;
+  }
+
+  return { user, isAdmin };
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                   login                                    */
 /* -------------------------------------------------------------------------- */
 /*
