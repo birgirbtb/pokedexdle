@@ -4,6 +4,9 @@ export const SignupFormSchema = z.object({
   username: z
     .string()
     .min(2, { error: "Username must be at least 2 characters." })
+    .regex(/^[a-zA-Z0-9]+$/, {
+      error: "Username can only contain letters and numbers.",
+    })
     .trim(),
   email: z.email({ error: "Invalid email address." }).trim(),
   password: z

@@ -14,37 +14,53 @@
     - Link button to Signup
 
   It uses:
-  - useActionState(login, initialState) to run the server action `login`
-  - `pending` to disable buttons and hide error messages while submitting
-  - `state?.errors` to show field-specific validation errors from the server action
+  - react-hook-form to manage form state and validation
+  - Zod to define a validation schema for the form data
+  - zodResolver to connect Zod validation with react-hook-form
+  - the login server action to handle form submission and return field-specific errors
 */
 
 import Input from "../components/Input"; // Custom styled input component
 import Button from "../components/Button"; // Custom styled button component
-import { useActionState, useState, useEffectEvent, useEffect } from "react"; // React hook for Server Actions (form actions) with state tracking
 import { login } from "@/lib/actions/auth"; // Server action that performs login + returns validation state
 import Link from "next/link"; // Next.js client navigation
+import { useForm } from "react-hook-form"; // Form handling library
+import * as z from "zod"; // Zod for schema validation
+import { zodResolver } from "@hookform/resolvers/zod"; // Connects Zod with react-hook-form
+import { LoginFormSchema } from "@/lib/schemas"; // Zod schema for validating the login form data
+import { ArrowLeft } from "lucide-react";
 
 export default function Login() {
-  /* ---------------------------- Form Action State -------------------------- */
-  // useActionState returns:
-  // - state: any errors (if applicable) returned by the server action, or undefined if not run yet
-  // - action: the function you put on the <form action={...}>
-  // - pending: true while the server action is running (form submitting)
-  const [state, action, pending] = useActionState(login, undefined);
-  const [errors, setErrors] = useState(state?.errors);
-
-  const updateErrors = useEffectEvent((state: typeof errors) => {
-    setErrors(state);
+  // Initialize the form with react-hook-form and Zod validation
+  const form = useForm<z.infer<typeof LoginFormSchema>>({
+    resolver: zodResolver(LoginFormSchema),
+    defaultValues: {
+      emailusername: "",
+      password: "",
+    },
   });
 
-  useEffect(() => {
-    if (state) {
-      updateErrors(state.errors);
-    }
-  }, [state]);
+  // onSubmit is called when the form is submitted and validation passes
+  const onSubmit = async (data: z.infer<typeof LoginFormSchema>) => {
+    try {
+      // Call the login server action with the form data
+      const response = await login(data);
 
-  const clearErrors = () => setErrors(undefined);
+      // If there are field-specific errors returned by the server action, set them in the form state
+      if (response.errors.emailusername) {
+        form.setError("emailusername", {
+          message: response.errors.emailusername.join(", "),
+        });
+      }
+      if (response.errors.password) {
+        form.setError("password", {
+          message: response.errors.password.join(", "),
+        });
+      }
+    } catch (error) {
+      // We leave this empty because the server action should handle all errors and return them in the response.
+    }
+  };
 
   return (
     /* ----------------------------- Outer Card ------------------------------ */
@@ -53,7 +69,14 @@ export default function Login() {
     // - rounded border + blur + gradient matches the site style
     <div className="relative w-full max-w-xl rounded-[18px] overflow-hidden bg-linear-to-b from-white/6 to-white/3 border border-white/10 shadow-[0_22px_55px_rgba(0,0,0,0.45)] backdrop-blur-[10px]">
       {/* ------------------------------ Header ------------------------------ */}
-      <header className="border-b border-white/10">
+      <header className="relative border-b border-white/10">
+        <Link
+          href="/"
+          aria-label="Back to home"
+          className="absolute left-4 top-1/2 -translate-y-1/2 p-1 rounded-md text-white/70 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/30"
+        >
+          <ArrowLeft size={16} />
+        </Link>
         {/* Title */}
         <h1 className="text-white text-center p-4 tracking-[0.2px] text-2xl font-semibold">
           Login
@@ -64,10 +87,10 @@ export default function Login() {
       <section className="p-4.5">
         {/* 
           Form:
-          - action={action} wires this form to the server action returned by useActionState
+          - onSubmit is handled by react-hook-form's handleSubmit which runs validation and then calls our onSubmit function
           - space-y-4 adds vertical spacing between sections
         */}
-        <form className="space-y-4" action={action}>
+        <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           {/* --------------------- Email/Username Field ---------------------- */}
           <div className="space-y-2">
             {/* Label */}
@@ -81,22 +104,27 @@ export default function Login() {
             {/* Input:
                 - name must match what the server action expects (emailusername)
                 - id matches label htmlFor for accessibility
+                - type="text is a standard text input
+                - {...form.register("emailusername")} connects this input to react-hook-form
             */}
             <Input
               id="emailusername"
-              name="emailusername"
               type="text"
               placeholder="yourname@gmail.com"
-              onChange={clearErrors}
+              aria-invalid={!!form.formState.errors.emailusername}
+              {...form.register("emailusername")}
             />
 
             {/* Validation error:
                 - Only show errors when NOT pending (prevents flashing while submitting)
-                - Reads field-specific error from state.errors.emailusername
+                - Reads field-specific error from formState.errors.emailusername
             */}
-            {!pending && errors?.emailusername && (
-              <p className="text-sm text-red-600">{errors.emailusername}</p>
-            )}
+            {!form.formState.isSubmitting &&
+              form.formState.errors.emailusername && (
+                <p className="text-sm text-red-600">
+                  {form.formState.errors.emailusername.message}
+                </p>
+              )}
           </div>
 
           {/* ------------------------- Password Field ------------------------- */}
@@ -111,26 +139,29 @@ export default function Login() {
             {/* Input:
                 - name must match what the server action expects (password)
                 - type password hides characters
+                - {...form.register("password")} connects this input to react-hook-form
             */}
             <Input
               id="password"
-              name="password"
               type="password"
               placeholder="••••••••"
-              onChange={clearErrors}
+              aria-invalid={!!form.formState.errors.password}
+              {...form.register("password")}
             />
             {/* Validation error:
-                - Only show errors when NOT pending
-                - Reads field-specific error from state.errors.password
+                - Only show errors when NOT pending (prevents flashing while submitting)
+                - Reads field-specific error from formState.errors.password
             */}
-            {!pending && errors?.password && (
-              <p className="text-sm text-red-600">{errors.password}</p>
+            {!form.formState.isSubmitting && form.formState.errors.password && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.password.message}
+              </p>
             )}
           </div>
 
           {/* -------------------------- Submit Button ------------------------- */}
           {/* Submit triggers the server action (login) */}
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             Login
           </Button>
 
