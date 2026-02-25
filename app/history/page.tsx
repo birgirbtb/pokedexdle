@@ -17,6 +17,7 @@
 
 import Link from "next/link"; // Client-side navigation
 import GameFrame from "../components/GameFrame"; // Shared app shell layout
+import { UnsignedUserHistory } from "../components/UnsignedUserHistory"; // Unsigned user history component
 import { createClient } from "@/lib/supabase/server"; // Server-side Supabase client
 
 // Max number of guesses/attempt slots shown per day.
@@ -178,8 +179,7 @@ export default async function HistoryPage() {
 
   /* ---------------------------- Logged-out State --------------------------- */
 
-  // If not logged in, show a message and a login button.
-  // This prevents loading user-specific games and avoids query errors.
+  // If not logged in, show local history from cookies/localStorage
   if (!user) {
     return (
       <GameFrame
@@ -193,18 +193,16 @@ export default async function HistoryPage() {
       >
         <h1 className="text-white text-2xl font-bold">Guess History</h1>
 
-        {/* Panel for logged-out messaging */}
-        <div className="rounded-2xl border border-white/10 bg-black/20 shadow-[0_10px_26px_rgba(0,0,0,0.35)] p-5 text-center text-[#9aa6c3]">
-          Log in to view your history.
-          {/* Login call-to-action */}
-          <div className="mt-4">
-            <Link href="/login">
-              <button className="border border-white/[0.14] bg-black/10 text-[#e8eefc] py-2.5 px-3.5 rounded-xl font-bold cursor-pointer">
-                Login
-              </button>
-            </Link>
-          </div>
+        <div className="flex flex-col gap-3 mb-4">
+          <p className="text-[#9aa6c3]">Your local gaming history:</p>
+          <Link href="/login">
+            <button className="border border-white/[0.14] bg-black/10 text-[#e8eefc] py-2.5 px-3.5 rounded-xl font-bold cursor-pointer">
+              Log in to sync your progress
+            </button>
+          </Link>
         </div>
+
+        <UnsignedUserHistory />
       </GameFrame>
     );
   }
