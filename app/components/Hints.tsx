@@ -14,6 +14,7 @@
 // -----------------------------------------------------------------------------
 
 import type { Pokemon } from "pokedex-promise-v2"; // Pokémon type from pokedex-promise-v2
+import { FadeSlideIn } from "./Animated";
 
 // Props passed in by GameClient (or wherever you use this component)
 type Props = {
@@ -102,7 +103,7 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
   const types = pokemon?.types ?? [];
 
   /* ------------------------------------------------------------------------ */
-  /*                              Hint Tier Logic                              */
+  /*                              Hint Tier Logic                             */
   /* ------------------------------------------------------------------------ */
   // The hint tiers are revealed based on revealedHints:
   // 1 -> Type
@@ -152,27 +153,28 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
     hints.push("Generation: ???");
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                                  Render                                   */
-  /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------ */
+    /*                                 Render                                   */
+    /* ------------------------------------------------------------------------ */
   return (
-    // Chip container:
-    // - flex-wrap allows chips to wrap on small screens
-    // - justify-center keeps them centered
-    // - gap controls spacing between chips
     <div className="flex flex-wrap justify-center gap-2.5 mt-2">
       {hints.map((hint, i) => (
-        // Each chip:
-        // - rounded-full for pill shape
-        // - consistent padding for good tap targets on mobile
-        // - subtle background/border styling
-        <div
-          key={i}
-          className="rounded-full py-2.5 px-3.5 bg-black/22 border border-white/12 text-white hover:bg-black/30"
-        >
-          {/* The actual hint text */}
-          {hint}
-        </div>
+        // Key includes hint text so when ??? becomes real value,
+        // React treats it as a new element -> animation re-triggers
+        <FadeSlideIn key={`${i}-${hint}`} index={i}>
+          <div
+            className="
+              rounded-full
+              py-2.5 px-3.5
+              bg-black/22
+              border border-white/12
+              text-white
+              hover:bg-black/30
+            "
+          >
+            {hint}
+          </div>
+        </FadeSlideIn>
       ))}
     </div>
   );
