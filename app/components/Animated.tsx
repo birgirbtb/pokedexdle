@@ -31,7 +31,7 @@ export function FadeSlideIn({ children, index = 0 }: FadeSlideInProps) {
     <div
       className="will-change-[opacity,transform]"
       style={{
-        animation: "fadeSlideIn 2000ms ease-out both",
+        animation: "fadeSlideIn 1000ms ease-out both",
         animationDelay: `${index * 60}ms`,
       }}
     >
