@@ -4,8 +4,6 @@
 // App-wide layout frame for the game pages.
 // - Glass container shell
 // - Header (brand, optional centered button, auth)
-// - Background visuals (extra desktop-only pokéballs OUTSIDE the panel)
-// - Background visuals (your desktop-only pokéball INSIDE the panel)
 // - Page content (children)
 // -----------------------------------------------------------------------------
 
@@ -19,99 +17,6 @@ type AppFrameProps = {
   children: ReactNode;
   headerCenter?: ReactNode;
 };
-
-// Small reusable pokéball visual (pure JSX)
-// NOTE: Used for the 5 extra OUTSIDE-the-panel pokéballs
-function PokeBallOutline({
-  className,
-  size = 140,
-  opacity = 0.14,
-  blueSpeed = 5,
-  redSpeed = 5,
-  blueAlpha = 0.9,
-  redAlpha = 0.85,
-  glowBlue = 0.28,
-  glowRed = 0.24,
-  ring = 5,
-}: {
-  className: string; // Positioning + responsive visibility
-  size?: number; // Width/height in px
-  opacity?: number; // Overall pokéball opacity
-  blueSpeed?: number; // Seconds per full spin
-  redSpeed?: number; // Seconds per full spin (reverse)
-  blueAlpha?: number; // Tracer brightness (0..1)
-  redAlpha?: number; // Tracer brightness (0..1)
-  glowBlue?: number; // Glow strength (0..1)
-  glowRed?: number; // Glow strength (0..1)
-  ring?: number; // Ring thickness for the tracer mask
-}) {
-  // Inline size style (keeps Tailwind classes simpler)
-  const sizeStyle = { width: `${size}px`, height: `${size}px` };
-
-  return (
-    // Wrapper handles placement; children are the pokéball drawing
-    <div className={className}>
-      {/* Size box */}
-      <div className="relative" style={sizeStyle}>
-        {/* Outer circle */}
-        <div
-          className="absolute inset-0 rounded-full border border-white/20"
-          style={{ opacity }}
-        />
-
-        {/* Horizontal seam */}
-        <div
-          className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-white/20"
-          style={{ opacity }}
-        />
-
-        {/* Center button ring */}
-        <div
-          className="absolute left-1/2 top-1/2 w-10 h-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20"
-          style={{ opacity }}
-        />
-
-        {/* Center button core */}
-        <div
-          className="absolute left-1/2 top-1/2 w-5 h-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10"
-          style={{ opacity }}
-        />
-
-        {/* Blue tracer */}
-        <div
-          className="
-            absolute inset-0 rounded-full
-            motion-safe:animate-spin
-          "
-          style={{
-            opacity,
-            animationDuration: `${blueSpeed}s`,
-            background: `conic-gradient(from 0deg, transparent 0 84%, rgba(56,189,248,${blueAlpha}) 88%, transparent 100%)`,
-            filter: `drop-shadow(0 0 8px rgba(56,189,248,${glowBlue}))`,
-            WebkitMask: `radial-gradient(farthest-side, transparent calc(100% - ${ring}px), #000 calc(100% - ${ring}px))`,
-            mask: `radial-gradient(farthest-side, transparent calc(100% - ${ring}px), #000 calc(100% - ${ring}px))`,
-          }}
-        />
-
-        {/* Red tracer (reverse) */}
-        <div
-          className="
-            absolute inset-0 rounded-full
-            motion-safe:animate-spin
-          "
-          style={{
-            opacity,
-            animationDuration: `${redSpeed}s`,
-            background: `conic-gradient(from 180deg, transparent 0 83%, rgba(244,63,94,${redAlpha}) 87%, transparent 100%)`,
-            filter: `drop-shadow(0 0 8px rgba(244,63,94,${glowRed}))`,
-            WebkitMask: `radial-gradient(farthest-side, transparent calc(100% - ${ring}px), #000 calc(100% - ${ring}px))`,
-            mask: `radial-gradient(farthest-side, transparent calc(100% - ${ring}px), #000 calc(100% - ${ring}px))`,
-          }}
-        />
-      </div>
-    </div>
-  );
-}
 
 export default async function GameFrame({
   children,
@@ -129,42 +34,6 @@ export default async function GameFrame({
     // Full viewport height (dvh handles mobile browser bars better than vh)
     // relative -> allows OUTSIDE-the-panel background visuals to position correctly
     <main className="relative min-h-[100dvh] flex justify-center items-start sm:items-center px-3 py-4 sm:px-6 sm:py-6 overflow-hidden">
-      {/* -------------------------------------------------------------------- */}
-      {/* OUTSIDE THE PANEL: 6 DESKTOP-ONLY POKÉBALLS                          */}
-      {/* -------------------------------------------------------------------- */}
-      <div className="pointer-events-none absolute inset-0 z-0 hidden lg:block">
-        {/* 1) Top-left */}
-        <PokeBallOutline
-          className="absolute left-[7%] top-[10%] -translate-x-1/2 -translate-y-1/2"
-          size={170}
-          opacity={0.75}
-        />
-
-        {/* 2) Bottom-left */}
-        <PokeBallOutline
-          className="absolute left-[7%] top-[80%] -translate-x-1/2 -translate-y-1/2"
-          size={170}
-          opacity={0.75}
-        />
-
-        {/* 3) Top-right */}
-        <PokeBallOutline
-          className="absolute left-[93%] top-[10%] -translate-x-1/2 -translate-y-1/2"
-          size={170}
-          opacity={0.75}
-        />
-
-        {/* 5) Bottom-right */}
-        <PokeBallOutline
-          className="absolute left-[93%] top-[80%] -translate-x-1/2 -translate-y-1/2"
-          size={170}
-          opacity={0.75}
-        />
-
-        {/* Soft vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(1200px_800px_at_50%_40%,rgba(0,0,0,0),rgba(0,0,0,0.55))]" />
-      </div>
-
       {/* -------------------------------------------------------------------- */}
       {/* Main glass container                                                  */}
       {/* -------------------------------------------------------------------- */}

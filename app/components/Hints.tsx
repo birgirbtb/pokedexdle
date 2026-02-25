@@ -103,7 +103,7 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
   const types = pokemon?.types ?? [];
 
   /* ------------------------------------------------------------------------ */
-  /*                              Hint Tier Logic                              */
+  /*                              Hint Tier Logic                             */
   /* ------------------------------------------------------------------------ */
   // The hint tiers are revealed based on revealedHints:
   // 1 -> Type
@@ -153,12 +153,9 @@ export default function Hints({ pokemon, generation, revealedHints }: Props) {
     hints.push("Generation: ???");
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                                  Render                                   */
-  /* ------------------------------------------------------------------------ */
     /* ------------------------------------------------------------------------ */
-  /*                                  Render                                   */
-  /* ------------------------------------------------------------------------ */
+    /*                                 Render                                   */
+    /* ------------------------------------------------------------------------ */
   return (
     <div className="flex flex-wrap justify-center gap-2.5 mt-2">
       {hints.map((hint, i) => (
