@@ -138,32 +138,6 @@ export default async function Page() {
 
   return (
     <GameFrame
-      /*
-        headerCenter renders a centered button in the GameFrame header.
-      */
-      headerCenter={
-        <Link href="/history">
-          <button
-            type="button"
-            className="
-              border border-white/[0.14]
-              bg-black/10
-              text-[#e8eefc]
-              py-2.5 px-3.5
-              rounded-xl
-              font-bold
-              cursor-pointer
-              hover:bg-black/20
-              active:translate-y-px
-              focus:outline-none
-              focus:ring-2
-              focus:ring-white/20
-            "
-          >
-            History
-          </button>
-        </Link>
-      }
     >
       {/* Main interactive game component */}
       <GameClient

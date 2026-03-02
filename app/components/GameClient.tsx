@@ -32,7 +32,7 @@ import { submitGuess, submitEndGame, initializeGame, isTodaysGameFinished } from
 import { getUserStats } from "@/lib/actions/stats"; // Fetch updated stats
 import type { UserStats } from "@/lib/actions/stats"; // Stats type
 import { getUnsignedUserStats, getTodaysGameRecord } from "@/lib/cookieStats"; // Unsigned user stats
-import { ChartLine, Clock, Infinity, HelpCircle } from "lucide-react"; // Icons
+import { ChartLine, Clock, Infinity, HelpCircle, History } from "lucide-react"; // Icons
 
 /* ------------------------------- Prop Types -------------------------------- */
 
@@ -64,12 +64,15 @@ export default function GameClient({
   // Determine if user is signed in (if game or stats exist, user is signed in)
   const isSignedIn = !!game || stats !== null;
 
+  // Import transfer logic
+  // Only import on client
+  const [hasTransferredStats, setHasTransferredStats] = useState(false);
+  
   // Attempts already used (load from server game if exists)
   const [attemptsUsed, setAttemptsUsed] = useState(game?.guesses.length || 0);
 
   // Whether the user has already won
   const [won, setWon] = useState(game?.won || false);
-
   // Previous guesses (sorted by attempt_number)
   const [previousGuesses, setPreviousGuesses] = useState<string[]>(
     game?.guesses
@@ -126,6 +129,64 @@ export default function GameClient({
       setCurrentStats(stats as unknown as UserStats);
     }
   }, [won, attemptsUsed, isSignedIn]);
+
+  /* ------------------- Transfer Local Stats After Sign In ------------------- */
+
+  useEffect(() => {
+    async function maybeTransferStats() {
+      console.log(`[Transfer] useEffect triggered - isSignedIn: ${isSignedIn}, hasTransferredStats: ${hasTransferredStats}`);
+      
+      // Only run once when user is signed in and we haven't transferred yet
+      if (isSignedIn && !hasTransferredStats) {
+        try {
+          // Check if there are local stats to transfer
+          const stored = typeof window !== "undefined" ? window.localStorage.getItem("pokedexdle_unsigned_stats") : null;
+          console.log(`[Transfer] localStorage check - stored: ${stored ? 'exists' : 'null'}`);
+          
+          if (stored) {
+            const localGames = JSON.parse(stored);
+            console.log(`[Transfer] Parsed local games:`, localGames);
+            
+            if (localGames && localGames.length > 0) {
+              console.log(`[Transfer] Found ${localGames.length} local games to transfer, calling transferStatsOnSignup...`);
+              
+              // Dynamically import to avoid SSR issues
+              const { transferStatsOnSignup } = await import("@/lib/transferStats");
+              const result = await transferStatsOnSignup();
+              
+              console.log(`[Transfer] Transfer complete - inserted ${result.inserted} games to server account`);
+              
+              // Refresh stats from server after transfer
+              const updatedStats = await getUserStats();
+              console.log(`[Transfer] Updated stats from server:`, updatedStats);
+              setCurrentStats(updatedStats);
+              
+              console.log("[Transfer] Stats state updated successfully");
+            } else {
+              console.log("[Transfer] No local games to transfer (empty array)");
+            }
+          } else {
+            console.log("[Transfer] No localStorage data found");
+          }
+        } catch (error) {
+          console.error("[Transfer] Error transferring stats:", error);
+        } finally {
+          // Mark as transferred even if it fails to avoid infinite loops
+          setHasTransferredStats(true);
+          console.log("[Transfer] Marked as transferred");
+        }
+      } else {
+        if (!isSignedIn) {
+          console.log("[Transfer] Skipping - user not signed in");
+        }
+        if (hasTransferredStats) {
+          console.log("[Transfer] Skipping - already transferred");
+        }
+      }
+    }
+    
+    maybeTransferStats();
+  }, [isSignedIn, hasTransferredStats]);
 
   /* ---------------------------- Derived Values ----------------------------- */
 
@@ -461,6 +522,14 @@ export default function GameClient({
                           Unlimited
                         </>
                       )}
+                    </button>
+                  </Link>
+
+                  {/* History button */}
+                  <Link href="/history">
+                    <button className="w-full px-3 py-2 rounded-xl text-white font-bold hover:bg-white/20 transition-colors cursor-pointer text-sm flex items-center justify-center gap-2">
+                      <History size={20} />
+                        History
                     </button>
                   </Link>
 

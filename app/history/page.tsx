@@ -202,7 +202,7 @@ export default async function HistoryPage() {
           </Link>
         </div>
 
-        <UnsignedUserHistory />
+        <UnsignedUserHistory days={days || []} />
       </GameFrame>
     );
   }

@@ -22,6 +22,93 @@
 
 import { createClient } from "@/lib/supabase/server"; // Server Supabase client (session/cookies aware)
 
+// Type for local game record (from cookieStats)
+export type LocalGameRecord = {
+  date: string;
+  won: boolean;
+  guesses: number;
+  pokemonName: string;
+  isFinished?: boolean;
+};
+
+/**
+ * Transfer local stats to the signed-in user's database account.
+ * Only inserts games for days not already present in the database.
+ */
+export async function transferLocalStatsToUser(localGames: LocalGameRecord[]): Promise<{ inserted: number }> {
+  console.log('[Server] transferLocalStatsToUser called with', localGames.length, 'games');
+  
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    console.log('[Server] No user found - returning 0');
+    return { inserted: 0 };
+  }
+  
+  console.log('[Server] User authenticated:', user.id);
+
+  // Get all daily_pokemon rows for the provided dates
+  const dates = localGames.map(g => g.date);
+  console.log('[Server] Looking up dates:', dates);
+  
+  const { data: dailyRows } = await supabase
+    .from("daily_pokemon")
+    .select("id, available_on")
+    .in("available_on", dates);
+    
+  if (!dailyRows) {
+    console.log('[Server] No daily_pokemon rows found');
+    return { inserted: 0 };
+  }
+  
+  console.log('[Server] Found', dailyRows.length, 'daily_pokemon records');
+
+  // Map date to daily_pokemon_id
+  const dateToId = Object.fromEntries(dailyRows.map(row => [row.available_on, row.id]));
+
+  // Get all user's games for these days
+  const { data: userGames } = await supabase
+    .from("games")
+    .select("id, daily_pokemon_id")
+    .eq("user_id", user.id)
+    .in("daily_pokemon_id", Object.values(dateToId));
+    
+  const existingDayIds = new Set((userGames || []).map(g => g.daily_pokemon_id));
+  console.log('[Server] User already has', existingDayIds.size, 'existing games');
+
+  // Prepare new games to insert
+  const newGames = localGames
+    .filter(g => {
+      const dayId = dateToId[g.date];
+      return dayId && !existingDayIds.has(dayId);
+    })
+    .map(g => ({
+      user_id: user.id,
+      daily_pokemon_id: dateToId[g.date],
+      won: g.won,
+      is_finished: g.isFinished ?? true,
+    }));
+
+  console.log('[Server] Prepared', newGames.length, 'new games to insert');
+
+  let inserted = 0;
+  if (newGames.length > 0) {
+    const { error } = await supabase.from("games").insert(newGames);
+    if (!error) {
+      inserted = newGames.length;
+      console.log('[Server] Successfully inserted', inserted, 'games');
+    } else {
+      console.error('[Server] Error inserting games:', error);
+    }
+  }
+  
+  console.log('[Server] Returning result:', { inserted });
+  return { inserted };
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                  Types                                     */
 /* -------------------------------------------------------------------------- */
