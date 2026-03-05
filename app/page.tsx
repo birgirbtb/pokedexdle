@@ -16,107 +16,25 @@
 
 /* --------------------------------- Imports -------------------------------- */
 
-import Link from "next/link"; // Client-side navigation
-import { createClient } from "@/lib/supabase/server"; // Server-side Supabase client
-import Pokedex from "pokedex-promise-v2"; // PokéAPI wrapper
 import GameFrame from "./components/GameFrame"; // Layout wrapper
 import GameClient from "./components/GameClient"; // Main interactive client component
 import { getTodaysPokemon, getUserGame } from "@/lib/actions/guess"; // Game data
 import { getUserStats } from "@/lib/actions/stats"; // Stats data
-
-/* ----------------------------- PokéAPI Instance ---------------------------- */
-
-// Create one Pokedex instance for API calls
-const P = new Pokedex();
-
-/* -------------------------------------------------------------------------- */
-/*                     Helper: Get Evolution Stage                            */
-/* -------------------------------------------------------------------------- */
-/*
-  Fetches evolution chain for a Pokémon and determines
-  which stage it belongs to (1, 2, 3, etc).
-*/
-async function getEvolutionStage(
-  pokemonName: string,
-  speciesData?: { evolution_chain: { url: string } },
-) {
-  // Fetch species data
-  const species = speciesData ?? (await P.getPokemonSpeciesByName(pokemonName));
-
-  // Fetch evolution chain
-  const evolutionChainId = species.evolution_chain.url
-    .split("/")
-    .filter(Boolean)
-    .pop();
-
-  if (!evolutionChainId) {
-    return 1;
-  }
-
-  const evoChain = await P.getEvolutionChainById(Number(evolutionChainId));
-
-  // Traverse full evolution tree (supports branched chains)
-  const queue = [{ node: evoChain.chain, stage: 1 }];
-
-  while (queue.length > 0) {
-    const current = queue.shift();
-
-    if (!current) {
-      continue;
-    }
-
-    // If current matches Pokémon, return its stage
-    if (current.node.species.name === pokemonName) {
-      return current.stage;
-    }
-
-    // Enqueue all next evolutions (not just first branch)
-    for (const nextEvolution of current.node.evolves_to ?? []) {
-      queue.push({ node: nextEvolution, stage: current.stage + 1 });
-    }
-  }
-
-  // Default fallback
-  return 1;
-}
+import { getCurrentUserWithAdmin } from "@/lib/actions/auth"; // Auth query (with admin check)
+import { getPokemonWithMetadata } from "@/lib/actions/pokemon"; // Pokémon data fetching + processing
+import HistoryButton from "./components/HistoryButton"; // Button linking to game history page
 
 /* -------------------------------------------------------------------------- */
 /*                                Page Component                              */
 /* -------------------------------------------------------------------------- */
 
 export default async function Page() {
-  /* ----------------------------- Auth Handling ----------------------------- */
-
-  // Create Supabase server client
-  const supabase = await createClient();
-
-  // Get authenticated user (if logged in)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  /* ------------------------------ Admin Check ------------------------------ */
-
-  let isAdmin = false;
-
-  if (user) {
-    // Check profiles table for admin flag
-    const { data } = await supabase
-      .from("profiles")
-      .select("admin")
-      .eq("id", user.id)
-      .single();
-
-    isAdmin = data?.admin || false;
-  }
+  // Get current user and admin status (if logged in)
+  const { user, isAdmin } = await getCurrentUserWithAdmin();
 
   /* ------------------------- Get Today's Pokémon -------------------------- */
 
   const pokemonData = await getTodaysPokemon();
-
-  // Strong typing for Pokémon object
-  let pokemon: Pokedex.Pokemon & { evolutionStage?: number };
-  let generation: string;
 
   // If no Pokémon data exists for today
   if (!pokemonData) {
@@ -138,70 +56,41 @@ export default async function Page() {
   /* --------------------------- PokéAPI Fetching ---------------------------- */
 
   try {
-    // Fetch species info (for generation)
-    const speciesData = await P.getPokemonSpeciesByName(correctPokemon);
-    generation = speciesData.generation.name;
+    // Fetch Pokémon details + metadata from PokéAPI
+    const { pokemon, generation } =
+      await getPokemonWithMetadata(correctPokemon);
 
-    // Fetch Pokémon full data (sprites, types, etc.)
-    pokemon = await P.getPokemonByName(correctPokemon);
+    /* -------------------------- User Game & Stats ---------------------------- */
 
-    // Determine evolution stage
-    const evolutionStage = await getEvolutionStage(correctPokemon, speciesData);
-    pokemon.evolutionStage = evolutionStage;
+    // Get today's game for this user (if logged in)
+    const game = user ? await getUserGame() : null;
+
+    // Get user statistics (if logged in)
+    const stats = user ? await getUserStats() : null;
+
+    /* ------------------------------ Render Page ------------------------------ */
+
+    return (
+      <GameFrame
+        /*
+          headerCenter renders a centered button
+          inside GameFrame header.
+        */
+        headerCenter={<HistoryButton />}
+      >
+        {/* Main interactive game component */}
+        <GameClient
+          pokemon={pokemon} // Pokémon full data
+          generation={generation} // Generation string
+          game={game} // User's game for today
+          nextGuessAt={nextGuessAt.toISOString()} // Cooldown target
+          stats={stats} // User statistics
+          isAdmin={isAdmin} // Admin flag
+        />
+      </GameFrame>
+    );
   } catch (error) {
     console.error("Error fetching pokemon:", error);
     return <div className="text-white">Error loading pokemon data</div>;
   }
-
-  /* -------------------------- User Game & Stats ---------------------------- */
-
-  // Get today's game for this user (if logged in)
-  const game = user ? await getUserGame() : null;
-
-  // Get user statistics (if logged in)
-  const stats = user ? await getUserStats() : null;
-
-  /* ------------------------------ Render Page ------------------------------ */
-
-  return (
-    <GameFrame
-      /*
-        headerCenter renders a centered button
-        inside GameFrame header.
-      */
-      headerCenter={
-        <Link href="/history">
-          <button
-            type="button"
-            className="
-              border border-white/[0.14]
-              bg-black/10
-              text-[#e8eefc]
-              py-2.5 px-3.5
-              rounded-xl
-              font-bold
-              cursor-pointer
-              hover:bg-black/20
-              active:translate-y-px
-              focus:outline-none
-              focus:ring-2
-              focus:ring-white/20
-            "
-          >
-            History
-          </button>
-        </Link>
-      }
-    >
-      {/* Main interactive game component */}
-      <GameClient
-        pokemon={pokemon} // Pokémon full data
-        generation={generation} // Generation string
-        game={game} // User's game for today
-        nextGuessAt={nextGuessAt.toISOString()} // Cooldown target
-        stats={stats} // User statistics
-        isAdmin={isAdmin} // Admin flag
-      />
-    </GameFrame>
-  );
 }
