@@ -58,7 +58,7 @@ export default function Login() {
         });
       }
 
-      // No longer transfer stats here; handled after redirect in GameClient
+
     } catch (error) {
       // We leave this empty because the server action should handle all errors and return them in the response.
     }
