@@ -8,6 +8,16 @@ const MAX_ATTEMPTS = 6;
 
 type GuessTileStatus = "correct" | "wrong" | "empty";
 
+type DailyPokemonRow = {
+  id: string;
+  available_on: string;
+  pokemon_name: string;
+};
+
+type Props = {
+  days: DailyPokemonRow[];
+};
+
 function formatDate(value: string) {
   const date = new Date(`${value}T00:00:00.000Z`);
   return date.toLocaleDateString("en-US", {
@@ -27,29 +37,52 @@ function getTileClasses(status: GuessTileStatus) {
   return "bg-white/5 border-white/10";
 }
 
-function buildTiles(record: GameRecord): GuessTileStatus[] {
-  const tiles: GuessTileStatus[] = Array(record.guesses)
-    .fill(null)
-    .map(() => (record.won ? "correct" : "wrong"));
+function buildTilesForDay(gameRecord: GameRecord | undefined): GuessTileStatus[] {
+  // If no game record, user didn't play this day
+  if (!gameRecord) {
+    return Array(MAX_ATTEMPTS).fill("empty");
+  }
 
-  // Pad with empty tiles
-  return tiles.concat(
-    Array.from({ length: MAX_ATTEMPTS - tiles.length }, () => "empty"),
-  );
+  const tiles: GuessTileStatus[] = [];
+  
+  // If user won, all guesses except the last are wrong, and the last is correct
+  if (gameRecord.won) {
+    // All previous attempts were wrong
+    for (let i = 0; i < gameRecord.guesses - 1; i++) {
+      tiles.push("wrong");
+    }
+    // The final attempt was correct
+    tiles.push("correct");
+  } else {
+    // If user lost, all guesses were wrong
+    for (let i = 0; i < gameRecord.guesses; i++) {
+      tiles.push("wrong");
+    }
+  }
+
+  // Pad with empty tiles to reach MAX_ATTEMPTS
+  while (tiles.length < MAX_ATTEMPTS) {
+    tiles.push("empty");
+  }
+
+  return tiles;
 }
 
-export function UnsignedUserHistory() {
-  const [games, setGames] = useState<GameRecord[]>([]);
+export function UnsignedUserHistory({ days }: Props) {
+  const [gamesByDate, setGamesByDate] = useState<Map<string, GameRecord>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
     const stored = getStoredGames();
-    // Sort by date descending (newest first)
-    const sorted = [...stored].sort((a, b) =>
-      b.date.localeCompare(a.date)
-    );
-    setGames(sorted);
+    
+    // Create a map of date -> game record for quick lookup
+    const gamesMap = new Map<string, GameRecord>();
+    stored.forEach(game => {
+      gamesMap.set(game.date, game);
+    });
+    
+    setGamesByDate(gamesMap);
     setIsLoading(false);
   }, []);
 
@@ -61,27 +94,29 @@ export function UnsignedUserHistory() {
     <>
       <div className="mt-4 w-full rounded-2xl border border-white/10 bg-black/20 shadow-[0_10px_26px_rgba(0,0,0,0.35)] p-5">
         {/* Empty history state */}
-        {games.length === 0 ? (
+        {days.length === 0 ? (
           <div className="text-[#9aa6c3]">No history yet.</div>
         ) : (
           // Rows container
           <div className="flex flex-col gap-4">
             {/* Render one row per day */}
-            {games.map((game) => {
-              const tiles = buildTiles(game);
+            {days.map((day) => {
+              // Look up the user's game for this day (if it exists)
+              const gameRecord = gamesByDate.get(day.available_on);
+              const tiles = buildTilesForDay(gameRecord);
 
               return (
-                <div key={game.date} className="flex items-center gap-6">
+                <div key={day.id} className="flex items-center gap-6">
                   {/* Left: Day label */}
                   <div className="w-36 text-[#9aa6c3]">
-                    {formatDate(game.date)}
+                    {formatDate(day.available_on)}
                   </div>
 
                   {/* Right: Attempt tiles */}
                   <div className="flex flex-wrap gap-2">
                     {tiles.map((status, index) => (
                       <div
-                        key={`${game.date}-${index}`}
+                        key={`${day.id}-${index}`}
                         className={`w-7 h-7 rounded-md border ${getTileClasses(
                           status,
                         )}`}

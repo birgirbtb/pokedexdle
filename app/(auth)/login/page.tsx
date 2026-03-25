@@ -57,6 +57,8 @@ export default function Login() {
           message: response.errors.password.join(", "),
         });
       }
+
+
     } catch (error) {
       // We leave this empty because the server action should handle all errors and return them in the response.
     }

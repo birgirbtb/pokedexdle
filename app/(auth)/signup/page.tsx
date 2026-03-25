@@ -56,7 +56,6 @@ export default function SignUp() {
           message: response.errors.username.join(", "),
         });
       }
-
       if (response.errors.email) {
         form.setError("email", {
           message: response.errors.email.join(", "),
@@ -72,6 +71,8 @@ export default function SignUp() {
           message: response.errors.confirmPassword.join(", "),
         });
       }
+
+      
     } catch (error) {
       // We leave this empty because the server action should handle all errors and return them in the response.
     }
